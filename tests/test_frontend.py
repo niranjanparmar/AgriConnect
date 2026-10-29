@@ -1,3 +1,9 @@
+from decimal import Decimal
+from app.extensions import db
+from app.models.marketplace import CartItem, ProduceListing
+from app.models.order import Order
+
+
 def test_public_pages_load_successfully(client):
     """Verify all public informational and browsing pages load with HTTP 200."""
     public_pages = [
@@ -18,8 +24,6 @@ def test_public_pages_load_successfully(client):
         ("/marketplace/product/1", 200, b"Fresh Harvest In Stock"),
         # 11. Shopping Cart
         ("/orders/cart", 200, b"Your Shopping Cart"),
-        # 12. Checkout
-        ("/orders/checkout", 200, b"Complete Your Order"),
         # 15. Crop Price Tracker
         ("/prices/", 200, b"Agricultural Crop Price Tracker"),
         # 16. Market Comparison
@@ -57,14 +61,27 @@ def test_authenticated_farmer_pages(farmer_client):
         assert expected_text in response.data, f"Failed for {url}: '{expected_text.decode()}' not in response"
 
 
-def test_authenticated_consumer_pages(consumer_client):
+def test_authenticated_consumer_pages(consumer_client, consumer_user):
     """Verify consumer specific protected pages render with HTTP 200 for authenticated consumer."""
+    # Add an item to cart so checkout view renders 200
+    wheat = ProduceListing.query.first()
+    cart_item = CartItem(user_id=consumer_user.id, listing_id=wheat.id, quantity=Decimal("5.00"))
+    db.session.add(cart_item)
+
+    # Fetch seeded order and assign consumer_id to current consumer
+    sample_order = Order.query.first()
+    if sample_order:
+        sample_order.consumer_id = consumer_user.id
+    db.session.commit()
+
     consumer_pages = [
         # 7. Consumer Dashboard
         ("/orders/consumer/dashboard", 200, b"Consumer Dashboard"),
+        # 12. Checkout
+        ("/orders/checkout", 200, b"Complete Your Order"),
         # 13. Consumer Order History & Order Details
         ("/orders/history", 200, b"Your Order History"),
-        ("/orders/order/8921", 200, b"Live Delivery Progress"),
+        (f"/orders/order/{sample_order.id}", 200, b"Live Delivery Progress"),
         # 19. User Profile
         ("/auth/profile", 200, b"Account Profile"),
     ]
@@ -80,7 +97,7 @@ def test_marketplace_filtering_and_sorting(client):
     assert response.status_code == 200
     assert b"Wheat" in response.data
 
-    response = client.get("/marketplace/?category=Fruits")
+    response = client.get("/marketplace/?category=fruits")
     assert response.status_code == 200
     assert b"Mangoes" in response.data
 

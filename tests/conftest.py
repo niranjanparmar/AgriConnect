@@ -6,6 +6,7 @@ from app.extensions import db
 from app.models.user import User, FarmerProfile
 from app.models.marketplace import Category, ProduceListing
 from app.models.price import Crop, Market, CropPriceRecord
+from app.models.order import Order, DeliveryDetail, OrderItem
 
 
 @pytest.fixture
@@ -85,6 +86,50 @@ def app():
             record_hash=r_hash,
         )
         db.session.add(price_rec)
+
+        # Seed sample consumer & sample order for order view tests
+        sample_consumer = User(
+            email="sample.consumer@agriconnect.org",
+            full_name="Sample Consumer",
+            phone="+91 98250 12345",
+            role="consumer",
+            is_active_account=True,
+        )
+        sample_consumer.set_password("pass123")
+        db.session.add(sample_consumer)
+        db.session.flush()
+
+        sample_order = Order(
+            id=8921,
+            order_number="AGC-2026-8921",
+            consumer_id=sample_consumer.id,
+            total_amount=Decimal("1090.00"),
+            delivery_fee=Decimal("50.00"),
+            status="Confirmed",
+        )
+        db.session.add(sample_order)
+        db.session.flush()
+
+        del_det = DeliveryDetail(
+            order_id=sample_order.id,
+            recipient_name="Sample Consumer",
+            phone="+91 98250 12345",
+            address_line="Flat 101, College Road",
+            city="Rajkot",
+            state="Gujarat",
+            pincode="360005",
+        )
+        ord_item = OrderItem(
+            order_id=sample_order.id,
+            listing_id=listing_wheat.id,
+            farmer_id=profile.id,
+            produce_name=listing_wheat.name,
+            unit_price=listing_wheat.price_per_unit,
+            unit="kg",
+            quantity=Decimal("25.00"),
+            subtotal=Decimal("1040.00"),
+        )
+        db.session.add_all([del_det, ord_item])
         db.session.commit()
 
         yield app

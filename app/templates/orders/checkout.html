@@ -81,8 +81,8 @@
                         {% for item in cart %}
                         <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="fw-semibold small">{{ item.name }}</div>
-                                <span class="small text-muted">{{ item.quantity }} {{ item.unit }} &times; ₹{{ item.price }}</span>
+                                <div class="fw-semibold small">{{ item.listing.name }}</div>
+                                <span class="small text-muted">{{ item.quantity }} {{ item.listing.unit }} &times; ₹{{ item.listing.price_per_unit }}</span>
                             </div>
                             <span class="fw-bold small text-success">₹{{ "%.2f"|format(item.subtotal) }}</span>
                         </div>

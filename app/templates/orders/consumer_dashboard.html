@@ -47,6 +47,7 @@
             <a href="{{ url_for('orders.order_history') }}" class="btn btn-sm btn-agri-outline">View Full History</a>
         </div>
         
+        {% if recent_orders %}
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -63,10 +64,10 @@
                     {% for order in recent_orders %}
                     <tr>
                         <td class="fw-semibold">{{ order.order_number }}</td>
-                        <td>{{ order.date }}</td>
+                        <td>{{ order.created_at.strftime('%d %b %Y') }}</td>
                         <td>
-                            {% for it in order['items'] %}
-                            <div>{{ it.quantity }} {{ it.unit }} &times; {{ it.name }}</div>
+                            {% for it in order.items %}
+                            <div>{{ it.quantity }} {{ it.unit }} &times; {{ it.produce_name }}</div>
                             {% endfor %}
                         </td>
                         <td class="fw-bold text-success">₹{{ "%.2f"|format(order.total_amount) }}</td>
@@ -75,6 +76,10 @@
                             <span class="badge bg-primary">{{ order.status }}</span>
                             {% elif order.status == 'Delivered' %}
                             <span class="badge bg-success">{{ order.status }}</span>
+                            {% elif order.status == 'Shipped' %}
+                            <span class="badge bg-info text-dark">{{ order.status }}</span>
+                            {% elif order.status == 'Cancelled' %}
+                            <span class="badge bg-danger">{{ order.status }}</span>
                             {% else %}
                             <span class="badge bg-warning text-dark">{{ order.status }}</span>
                             {% endif %}
@@ -89,6 +94,9 @@
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <p class="text-muted small mb-0">No recent orders found. Visit the marketplace to place an order.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

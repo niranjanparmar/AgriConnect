@@ -35,6 +35,20 @@ def create_app(config_name=None):
     app.register_blueprint(errors_bp)
     app.register_blueprint(cli_bp)
 
+    # Cart item count context processor
+    @app.context_processor
+    def inject_cart_count():
+        from flask_login import current_user
+        from app.models.marketplace import CartItem
+        count = 0
+        if current_user.is_authenticated:
+            try:
+                items = CartItem.query.filter_by(user_id=current_user.id).all()
+                count = sum(int(item.quantity) for item in items)
+            except Exception:
+                count = 0
+        return dict(cart_count=count)
+
     # Ensure upload directory exists
     upload_folder = app.config.get("UPLOAD_FOLDER")
     if upload_folder:

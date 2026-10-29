@@ -98,7 +98,7 @@
                     <a href="{{ url_for('orders.cart') }}" class="btn btn-outline-light position-relative me-2" title="View Shopping Cart">
                         <i class="bi bi-cart3 fs-5"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
-                            2
+                            {{ cart_count }}
                             <span class="visually-hidden">items in cart</span>
                         </span>
                     </a>
