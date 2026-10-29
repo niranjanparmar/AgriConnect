@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Consumer Dashboard - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <span class="badge badge-consumer px-3 py-1 mb-1">Consumer Portal</span>
+            <h2 class="fw-bold mb-0">Consumer Dashboard</h2>
+            <p class="text-muted small mb-0">Track your farm orders, view previous harvests, and manage delivery addresses.</p>
+        </div>
+        <a href="{{ url_for('marketplace.index') }}" class="btn btn-agri">
+            <i class="bi bi-cart3 me-1"></i> Shop Farm Produce
+        </a>
+    </div>
+
+    <!-- Consumer Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="small text-muted fw-semibold mb-1">In-Transit / Active Orders</div>
+                <div class="fs-3 fw-bold text-warning">{{ stats.active_orders }}</div>
+                <div class="small text-muted"><a href="{{ url_for('orders.order_history') }}" class="text-decoration-none">Track delivery &rarr;</a></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card stat-earth">
+                <div class="small text-muted fw-semibold mb-1">Delivered Orders</div>
+                <div class="fs-3 fw-bold text-dark">{{ stats.completed_orders }}</div>
+                <div class="small text-muted">Direct from Saurashtra farmers</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="small text-muted fw-semibold mb-1">Total Produce Purchased</div>
+                <div class="fs-3 fw-bold text-success">₹{{ "{:,.2f}".format(stats.total_spent) }}</div>
+                <div class="small text-muted">100% directly paid to growers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Orders Tracking List -->
+    <div class="card card-agri p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Active & Recent Orders</h5>
+            <a href="{{ url_for('orders.order_history') }}" class="btn btn-sm btn-agri-outline">View Full History</a>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Order Date</th>
+                        <th>Produce Items</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td class="fw-semibold">{{ order.order_number }}</td>
+                        <td>{{ order.date }}</td>
+                        <td>
+                            {% for it in order['items'] %}
+                            <div>{{ it.quantity }} {{ it.unit }} &times; {{ it.name }}</div>
+                            {% endfor %}
+                        </td>
+                        <td class="fw-bold text-success">₹{{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>
+                            {% if order.status == 'Confirmed' %}
+                            <span class="badge bg-primary">{{ order.status }}</span>
+                            {% elif order.status == 'Delivered' %}
+                            <span class="badge bg-success">{{ order.status }}</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('orders.order_detail', order_id=order.id) }}" class="btn btn-sm btn-outline-primary">
+                                Track Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Inbound Orders - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="fw-bold text-success mb-1">Inbound Consumer Orders</h2>
+            <p class="text-muted small mb-0">Review purchase requests, confirm orders, and dispatch farm shipments.</p>
+        </div>
+        <a href="{{ url_for('marketplace.farmer_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Farmer Dashboard
+        </a>
+    </div>
+
+    <div class="card card-agri overflow-hidden border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order #</th>
+                        <th>Consumer Details</th>
+                        <th>Harvest Items</th>
+                        <th>Amount</th>
+                        <th>Current Status</th>
+                        <th>Update Lifecycle Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td class="fw-bold">{{ order.order_number }}</td>
+                        <td>
+                            <div class="fw-semibold">Anand Shah</div>
+                            <small class="text-muted"><i class="bi bi-geo-alt"></i> Kalawad Road, Rajkot</small>
+                        </td>
+                        <td>
+                            {% for it in order['items'] %}
+                            <div class="small">{{ it.quantity }} {{ it.unit }} &times; {{ it.name }}</div>
+                            {% endfor %}
+                        </td>
+                        <td class="fw-bold text-success">₹{{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>
+                            {% if order.status == 'Confirmed' %}
+                            <span class="badge bg-primary">{{ order.status }}</span>
+                            {% elif order.status == 'Delivered' %}
+                            <span class="badge bg-success">{{ order.status }}</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('orders.farmer_orders') }}" class="d-flex gap-1 align-items-center">
+                                <input type="hidden" name="order_id" value="{{ order.id }}">
+                                <select name="status" class="form-select form-select-sm" style="width: 140px;">
+                                    <option value="Confirmed" {% if order.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                    <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                    <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-agri">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,16 +1,110 @@
 {% extends "base.html" %}
-{% block title %}Marketplace - AgriConnect{% endblock %}
+
+{% block title %}Produce Marketplace - AgriConnect{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4">
+    <!-- Header Breadcrumb & Title -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Marketplace</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <div>
-            <h2 class="fw-bold text-success">Farmer-to-Consumer Marketplace</h2>
-            <p class="text-muted">Direct harvest listings directly from farmers.</p>
+            <h2 class="fw-bold text-success mb-1">Direct Agricultural Marketplace</h2>
+            <p class="text-muted small mb-0">Browse fresh farm harvests sold directly by verified regional growers.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('marketplace.new_listing') }}" class="btn btn-agri">
+                <i class="bi bi-plus-circle me-1"></i> Post New Produce
+            </a>
         </div>
     </div>
-    <div class="alert alert-info py-4 text-center rounded-4">
-        <h5><i class="bi bi-clock-history me-2"></i> Marketplace Foundation Initialized</h5>
-        <p class="mb-0 text-muted">Complete catalogue, category filtering, search, and produce cards will be populated in Phase 3 and connected to database listings in Phase 7.</p>
+
+    <!-- Search & Filter Controls -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <form method="GET" action="{{ url_for('marketplace.index') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Search crops, produce, or farm location..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if current_category.lower() == cat.lower() %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="sort" class="form-select" onchange="this.form.submit()">
+                    <option value="featured" {% if sort_by == 'featured' %}selected{% endif %}>Sort by: Featured</option>
+                    <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Customer Rating</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <a href="{{ url_for('marketplace.index') }}" class="btn btn-outline-secondary w-100" title="Reset Filters"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
     </div>
+
+    <!-- Product Grid -->
+    {% if products %}
+    <div class="row g-4">
+        {% for p in products %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card card-agri h-100">
+                <div class="produce-img-wrap">
+                    <img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">
+                    <span class="badge bg-dark bg-opacity-75 produce-badge">{{ p.category }}</span>
+                    {% if p.stock > 0 %}
+                    <span class="badge bg-success position-absolute top-0 end-0 m-2"><i class="bi bi-check2"></i> In Stock ({{ p.stock }} {{ p.unit }})</span>
+                    {% else %}
+                    <span class="badge bg-danger position-absolute top-0 end-0 m-2"><i class="bi bi-x"></i> Sold Out</span>
+                    {% endif %}
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small text-muted"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ p.location }}</span>
+                        <span class="small text-warning"><i class="bi bi-star-fill"></i> {{ p.rating }} <span class="text-muted">({{ p.reviews_count }})</span></span>
+                    </div>
+                    <h5 class="fw-bold mb-1">
+                        <a href="{{ url_for('marketplace.product_detail', product_id=p.id) }}" class="text-dark text-decoration-none">{{ p.name }}</a>
+                    </h5>
+                    <p class="small text-muted mb-2">Farmer: <strong>{{ p.farmer_name }}</strong></p>
+                    <p class="small text-secondary mb-3 flex-grow-1">{{ p.description[:110] }}...</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <div>
+                            <span class="fs-4 fw-bold text-success">₹{{ "%.2f"|format(p.price) }}</span>
+                            <span class="text-muted small">/ {{ p.unit }}</span>
+                        </div>
+                        <a href="{{ url_for('marketplace.product_detail', product_id=p.id) }}" class="btn btn-agri btn-sm px-3">
+                            <i class="bi bi-eye me-1"></i> Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card p-5 text-center border-0 shadow-sm rounded-4 bg-white my-4">
+        <i class="bi bi-search display-3 text-muted mb-3"></i>
+        <h4>No farm listings match your search</h4>
+        <p class="text-muted">Try selecting a different category or clear the active search filter.</p>
+        <div>
+            <a href="{{ url_for('marketplace.index') }}" class="btn btn-agri px-4">View All Products</a>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -1,16 +1,159 @@
 {% extends "base.html" %}
-{% block title %}Crop Price Tracker - AgriConnect{% endblock %}
+
+{% block title %}Agricultural Crop Price Intelligence - AgriConnect{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4">
+    <!-- Breadcrumb & Header -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Mandi Price Tracker</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <div>
-            <h2 class="fw-bold text-success">Agricultural Crop Price Intelligence</h2>
-            <p class="text-muted">Real-time APMC Mandi rates, historical price curves, and regional comparison analytics.</p>
+            <span class="badge bg-primary-subtle text-primary px-3 py-1 mb-1">APMC Open Market Intelligence</span>
+            <h2 class="fw-bold mb-0">Agricultural Crop Price Tracker</h2>
+            <p class="text-muted small mb-0">Track real-time commodity arrivals, modal rates, and price bands across Indian mandis.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('prices.compare') }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-left-right me-1"></i> Compare Markets
+            </a>
+            <a href="{{ url_for('prices.trends') }}" class="btn btn-agri btn-sm">
+                <i class="bi bi-bar-chart-line me-1"></i> Historical Charts
+            </a>
         </div>
     </div>
-    <div class="alert alert-info py-4 text-center rounded-4">
-        <h5><i class="bi bi-graph-up me-2"></i> Price Intelligence Module Initialized</h5>
-        <p class="mb-0 text-muted">Chart.js visualizations, mandi comparisons, and price filters will be fully built out in Phase 3 and connected to live/demo price datasets in Phase 8.</p>
+
+    <!-- Official Source Attribution & Last-Updated Banner -->
+    <div class="alert alert-light border border-secondary-subtle d-flex justify-content-between align-items-center flex-wrap gap-2 p-3 rounded-4 mb-4" role="alert">
+        <div class="small text-muted">
+            <i class="bi bi-info-circle-fill text-primary me-2"></i>
+            <strong>Data Source:</strong> {{ source_attribution }}
+        </div>
+        <div class="small text-muted">
+            <i class="bi bi-clock-history me-1"></i> <strong>Last Synchronized:</strong> {{ last_updated }}
+        </div>
     </div>
+
+    <!-- Aggregate Price Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="rate-box modal-rate shadow-sm">
+                <div class="small fw-semibold text-uppercase">Average Modal Benchmark</div>
+                <div class="fs-2 fw-bold">₹{{ "{:,.2f}".format(avg_modal) }}</div>
+                <div class="small">Per Quintal (100 kg)</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rate-box min-rate shadow-sm">
+                <div class="small fw-semibold text-uppercase">Floor Price (Minimum)</div>
+                <div class="fs-2 fw-bold">₹{{ "{:,.2f}".format(lowest_min) }}</div>
+                <div class="small">Minimum recorded in active filter</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rate-box max-rate shadow-sm">
+                <div class="small fw-semibold text-uppercase">Ceiling Price (Maximum)</div>
+                <div class="fs-2 fw-bold">₹{{ "{:,.2f}".format(highest_max) }}</div>
+                <div class="small">Highest price attained in active filter</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Control Form -->
+    <div class="card card-agri p-3 mb-4">
+        <form method="GET" action="{{ url_for('prices.index') }}" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold mb-1">Select Crop / Commodity</label>
+                <select name="crop" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Crops & Commodities</option>
+                    {% for c in crops %}
+                    <option value="{{ c }}" {% if selected_crop.lower() == c.lower() %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold mb-1">APMC Mandi / Market</label>
+                <select name="market" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Markets</option>
+                    {% for m in markets %}
+                    <option value="{{ m }}" {% if selected_market.lower() == m.lower() %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold mb-1">State</label>
+                <select name="state" class="form-select" onchange="this.form.submit()">
+                    <option value="">All States</option>
+                    {% for s in states %}
+                    <option value="{{ s }}" {% if selected_state.lower() == s.lower() %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <a href="{{ url_for('prices.index') }}" class="btn btn-outline-secondary w-100" style="margin-top: 24px;">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Commodity Price Records Table -->
+    {% if records %}
+    <div class="card card-agri overflow-hidden border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 table-agri">
+                <thead>
+                    <tr>
+                        <th>Commodity & Variety</th>
+                        <th>Mandi & State</th>
+                        <th>Arrival Date</th>
+                        <th>Min Price (₹)</th>
+                        <th>Max Price (₹)</th>
+                        <th>Modal Price (₹)</th>
+                        <th>Daily Arrivals</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ r.crop }}</div>
+                            <small class="text-muted">{{ r.variety }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ r.market }}</div>
+                            <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ r.district }}, {{ r.state }}</small>
+                        </td>
+                        <td>{{ r.arrival_date }}</td>
+                        <td class="text-secondary fw-semibold">₹{{ "{:,.2f}".format(r.min_price) }}</td>
+                        <td class="text-danger fw-semibold">₹{{ "{:,.2f}".format(r.max_price) }}</td>
+                        <td class="text-success fw-bold fs-6">₹{{ "{:,.2f}".format(r.modal_price) }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ r.arrivals_tonnes }} MT</span></td>
+                        <td>
+                            <a href="{{ url_for('prices.trends', crop=r.crop) }}" class="btn btn-sm btn-outline-primary" title="View Historical Trend">
+                                <i class="bi bi-graph-up"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card p-5 text-center border-0 shadow-sm rounded-4 bg-white">
+        <i class="bi bi-clipboard-x display-4 text-muted mb-3"></i>
+        <h4>No Mandi Price Records Found</h4>
+        <p class="text-muted">No pricing data is currently recorded for the specified commodity or market filter.</p>
+        <div>
+            <a href="{{ url_for('prices.index') }}" class="btn btn-agri px-4">Clear All Filters</a>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -1,47 +1,153 @@
 {% extends "base.html" %}
 
-{% block title %}Home - AgriConnect Marketplace & Crop Price Tracker{% endblock %}
+{% block title %}AgriConnect - Connecting Farmers & Consumers Directly{% endblock %}
 
 {% block content %}
-<div class="hero-section text-center text-white py-5 mb-5" style="background: linear-gradient(135deg, #1b5e20, #2e7d32);">
-    <div class="container py-4">
-        <span class="badge bg-warning text-dark px-3 py-2 mb-3 rounded-pill fw-bold">Direct Farmer-to-Consumer Network</span>
-        <h1 class="display-4 fw-bold mb-3">Empowering Farmers, Delivering Freshness</h1>
-        <p class="lead mb-4 col-md-8 mx-auto text-light">
-            Eliminate middlemen markups, buy directly from local agricultural producers, and stay informed with real-time APMC mandi crop price tracking.
+<!-- Hero Section -->
+<section class="hero-banner py-5 mb-5 shadow-sm">
+    <div class="container py-4 text-center">
+        <span class="badge bg-warning text-dark px-3 py-2 mb-3 rounded-pill fw-bold text-uppercase tracking-wider">
+            <i class="bi bi-patch-check-fill me-1"></i> Transparent Indian Agri-Commerce
+        </span>
+        <h1 class="display-4 fw-bold mb-3">Fresh Harvest Directly from Farmers.<br>Smart Mandi Price Intelligence.</h1>
+        <p class="lead mb-4 col-lg-8 mx-auto text-white-50">
+            AgriConnect bridges local agricultural growers directly with consumers for fair pricing while equipping farmers with real-time APMC Mandi commodity rates and historical price analytics.
         </p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="{{ url_for('marketplace.index') }}" class="btn btn-warning btn-lg fw-semibold px-4 shadow-sm">
-                <i class="bi bi-basket3 me-2"></i> Browse Marketplace
+            <a href="{{ url_for('marketplace.index') }}" class="btn btn-warning btn-lg fw-semibold px-4 shadow">
+                <i class="bi bi-basket2-fill me-2"></i> Explore Marketplace
             </a>
             <a href="{{ url_for('prices.index') }}" class="btn btn-outline-light btn-lg fw-semibold px-4">
-                <i class="bi bi-graph-up me-2"></i> Track Mandi Prices
+                <i class="bi bi-graph-up me-2"></i> Check Mandi Prices
             </a>
+        </div>
+    </div>
+</section>
+
+<!-- Live APMC Mandi Ticker Highlights -->
+<div class="container mb-5">
+    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="fw-bold text-success small text-uppercase">
+                <i class="bi bi-broadcast text-danger me-1 animate-pulse"></i> Today's Key APMC Mandi Highlights (Demo Snapshot)
+            </span>
+            <a href="{{ url_for('prices.index') }}" class="small text-decoration-none fw-semibold">View All Rates &rarr;</a>
+        </div>
+        <div class="row g-2">
+            {% for item in price_highlights %}
+            <div class="col-6 col-md-3">
+                <div class="p-2 border rounded-3 bg-light">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-semibold small text-truncate">{{ item.crop }}</span>
+                        <span class="badge {% if '+' in item.change %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} small">
+                            {{ item.change }}
+                        </span>
+                    </div>
+                    <div class="fs-5 fw-bold text-dark mt-1">₹{{ "{:,}".format(item.modal_price) }} <span class="small text-muted fs-6">/ {{ item.unit }}</span></div>
+                    <div class="small text-muted">{{ item.market }}</div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
-<div class="container my-5">
-    <div class="row g-4 text-center">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-shadow">
-                <div class="display-5 text-success mb-3"><i class="bi bi-truck"></i></div>
-                <h5 class="fw-bold">Direct from Farmers</h5>
-                <p class="text-muted">Fresh harvest directly listed by certified regional farmers with complete transparent farm location tracking.</p>
+<!-- Featured Produce Showcase -->
+<div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <span class="badge bg-success-subtle text-success mb-1">Direct from Farm</span>
+            <h2 class="fw-bold mb-0">Featured Produce Listings</h2>
+        </div>
+        <a href="{{ url_for('marketplace.index') }}" class="btn btn-agri-outline btn-sm">
+            Browse All Products <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for p in products %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-agri h-100">
+                <div class="produce-img-wrap">
+                    <img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">
+                    <span class="badge bg-dark bg-opacity-75 produce-badge">{{ p.category }}</span>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ p.location }}</span>
+                        <span class="small text-warning"><i class="bi bi-star-fill"></i> {{ p.rating }}</span>
+                    </div>
+                    <h6 class="fw-bold mb-1"><a href="{{ url_for('marketplace.product_detail', product_id=p.id) }}" class="text-dark text-decoration-none">{{ p.name }}</a></h6>
+                    <p class="small text-muted mb-3">By: <strong>{{ p.farmer_name }}</strong></p>
+                    
+                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fs-5 fw-bold text-success">₹{{ "%.2f"|format(p.price) }}</span>
+                            <span class="text-muted small">/ {{ p.unit }}</span>
+                        </div>
+                        <a href="{{ url_for('marketplace.product_detail', product_id=p.id) }}" class="btn btn-agri btn-sm">
+                            <i class="bi bi-cart-plus me-1"></i> View
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-shadow">
-                <div class="display-5 text-success mb-3"><i class="bi bi-shield-check"></i></div>
-                <h5 class="fw-bold">Fair & Transparent Pricing</h5>
-                <p class="text-muted">Direct transaction models ensuring fair value returns for producers and affordable rates for consumers.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Key Pillars / Dual-Module Explanation -->
+<div class="container py-5 my-4 border-top">
+    <div class="text-center mb-5">
+        <span class="badge bg-warning-subtle text-dark px-3 py-2 rounded-pill fw-semibold mb-2">Academic Architecture</span>
+        <h2 class="fw-bold">How AgriConnect Empowers Agriculture</h2>
+        <p class="text-muted col-md-7 mx-auto">A seamless intersection of e-commerce logistics and agricultural open data analytics designed for the IPE project.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card p-4 border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-success text-white rounded-3 p-3 fs-3">
+                        <i class="bi bi-basket3"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">Module A: Farmer Marketplace</h4>
+                        <span class="text-muted small">Direct producer-to-consumer e-commerce</span>
+                    </div>
+                </div>
+                <ul class="list-unstyled text-muted small mb-4">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Dedicated farmer listings with live inventory management.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Atomic stock decrementing using database transactions.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Safe Cash-on-Delivery / Demo checkout workflow.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Real-time status lifecycle: Pending &rarr; Confirmed &rarr; Shipped &rarr; Delivered.</li>
+                </ul>
+                <div class="mt-auto">
+                    <a href="{{ url_for('marketplace.index') }}" class="btn btn-agri-outline w-100">Access Marketplace</a>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-shadow">
-                <div class="display-5 text-success mb-3"><i class="bi bi-bar-chart-line"></i></div>
-                <h5 class="fw-bold">APMC Price Intelligence</h5>
-                <p class="text-muted">Comprehensive crop price charts, modal rate comparisons, and historical trends across key Indian agricultural markets.</p>
+
+        <div class="col-md-6">
+            <div class="card p-4 border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-primary text-white rounded-3 p-3 fs-3">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">Module B: Crop Price Tracker</h4>
+                        <span class="text-muted small">APMC Mandi commodity price intelligence</span>
+                    </div>
+                </div>
+                <ul class="list-unstyled text-muted small mb-4">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Live & historical Minimum, Maximum, and Modal mandi prices.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Market-to-market comparison with comparative charts.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Historical price trend analysis rendered via Chart.js.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Idempotent import pipeline with full source attribution.</li>
+                </ul>
+                <div class="mt-auto">
+                    <a href="{{ url_for('prices.index') }}" class="btn btn-outline-primary w-100">Access Price Intelligence</a>
+                </div>
             </div>
         </div>
     </div>

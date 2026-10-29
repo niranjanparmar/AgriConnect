@@ -39,3 +39,4 @@ def create_app(config_name=None):
         os.makedirs(upload_folder, exist_ok=True)
 
     return app
+

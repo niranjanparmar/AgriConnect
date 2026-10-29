@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('marketplace.index') }}" class="text-decoration-none text-muted">Marketplace</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4 mb-5">
+        <!-- Product Image Preview -->
+        <div class="col-lg-6">
+            <div class="card card-agri overflow-hidden p-2">
+                <img src="{{ product.image }}" alt="{{ product.name }}" class="img-fluid rounded-4" style="max-height: 440px; width: 100%; object-fit: cover;">
+            </div>
+        </div>
+
+        <!-- Product Purchase Information -->
+        <div class="col-lg-6">
+            <div class="card card-agri p-4 p-md-5 h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill">{{ product.category }}</span>
+                    <span class="text-warning small"><i class="bi bi-star-fill"></i> {{ product.rating }} ({{ product.reviews_count }} verified reviews)</span>
+                </div>
+
+                <h2 class="fw-bold mb-2">{{ product.name }}</h2>
+                <div class="mb-3">
+                    <span class="fs-2 fw-bold text-success">₹{{ "%.2f"|format(product.price) }}</span>
+                    <span class="text-muted fs-6">per {{ product.unit }}</span>
+                </div>
+
+                <div class="mb-4">
+                    {% if product.stock > 0 %}
+                    <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-0" role="alert">
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                        <div>
+                            <strong>Fresh Harvest In Stock:</strong> {{ product.stock }} {{ product.unit }} available for direct dispatch.
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        <div>
+                            <strong>Currently Sold Out:</strong> Next harvest cycle expected soon.
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <h6 class="fw-bold mb-1">Harvest & Crop Details:</h6>
+                <p class="text-muted small mb-4">{{ product.description }}</p>
+
+                <!-- Add to Cart Form -->
+                <form action="{{ url_for('orders.cart') }}" method="GET" class="mt-auto">
+                    <div class="row g-2 align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="form-label small fw-semibold mb-0">Quantity ({{ product.unit }}):</label>
+                        </div>
+                        <div class="col-4 col-sm-3">
+                            <input type="number" class="form-control text-center" value="{{ product.min_order }}" min="{{ product.min_order }}" max="{{ product.stock if product.stock > 0 else 1 }}" {% if product.stock == 0 %}disabled{% endif %}>
+                        </div>
+                        <div class="col-auto">
+                            <span class="small text-muted">Min order: {{ product.min_order }} {{ product.unit }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-agri btn-lg w-100 fw-semibold" {% if product.stock == 0 %}disabled{% endif %}>
+                            <i class="bi bi-cart3 me-2"></i> Add to Cart
+                        </button>
+                        <a href="{{ url_for('orders.checkout') }}" class="btn btn-warning btn-lg fw-semibold px-4" {% if product.stock == 0 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                            Buy Now
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Farmer Profile & Quality Guarantee -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card card-agri p-4 h-100">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-success text-white rounded-circle p-3 display-6">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div>
+                        <span class="badge badge-farmer mb-1">Verified Agricultural Producer</span>
+                        <h4 class="fw-bold mb-0">{{ product.farmer_name }}</h4>
+                        <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ product.location }}</span>
+                    </div>
+                </div>
+                <p class="small text-muted mb-3">Certified direct grower practicing sustainable traditional and organic agricultural harvesting.</p>
+                <div class="d-flex gap-2">
+                    <a href="tel:{{ product.farmer_phone }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-telephone me-1"></i> {{ product.farmer_phone }}</a>
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-chat-left-dots me-1"></i> Message Producer</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-agri p-4 h-100">
+                <h5 class="fw-bold text-success mb-3"><i class="bi bi-shield-check me-2"></i> Direct Purchase Guarantee</h5>
+                <ul class="list-unstyled small text-muted mb-0">
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i> <strong>100% Middleman-Free:</strong> Every rupee reaches the registered farmer directly.</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i> <strong>Safe Cash-on-Delivery:</strong> Inspect produce freshness upon arrival before payment.</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i> <strong>Transparent Mandi Reference:</strong> Prices aligned with real APMC wholesale benchmark averages.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Order Details {{ order.order_number }} - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('orders.order_history') }}" class="text-decoration-none text-muted">Orders</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ order.order_number }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header info -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <span class="badge bg-success-subtle text-success px-3 py-1 mb-1">Order Confirmed</span>
+            <h2 class="fw-bold mb-0">{{ order.order_number }}</h2>
+            <p class="text-muted small mb-0">Placed on {{ order.date }} &bull; Payment via {{ order.payment_method }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i> Print Invoice</button>
+            <a href="{{ url_for('orders.order_history') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Orders</a>
+        </div>
+    </div>
+
+    <!-- Visual Status Timeline Tracker -->
+    <div class="card card-agri p-4 mb-4">
+        <h5 class="fw-bold mb-4"><i class="bi bi-truck text-success me-2"></i> Live Delivery Progress</h5>
+        <div class="d-flex justify-content-between align-items-start position-relative">
+            {% for step in order.status_history %}
+            <div class="timeline-step {% if step.done %}completed{% endif %}">
+                <div class="timeline-icon">
+                    {% if step.done %}<i class="bi bi-check-lg"></i>{% else %}{{ loop.index }}{% endif %}
+                </div>
+                <div class="fw-bold small">{{ step.step }}</div>
+                <small class="text-muted" style="font-size: 0.75rem;">{{ step.time }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Purchased Produce Items Breakdown -->
+        <div class="col-lg-8">
+            <div class="card card-agri p-4 mb-4">
+                <h5 class="fw-bold mb-3">Purchased Produce Items</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th>Rate</th>
+                                <th>Quantity</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order['items'] %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ item.name }}</div>
+                                    <small class="text-muted">Farmer: {{ item.farmer_name }}</small>
+                                </td>
+                                <td>₹{{ "%.2f"|format(item.price) }} / {{ item.unit }}</td>
+                                <td>{{ item.quantity }} {{ item.unit }}</td>
+                                <td class="text-end fw-bold text-success">₹{{ "%.2f"|format(item.subtotal) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end text-muted">Delivery & Logistics:</td>
+                                <td class="text-end fw-semibold">₹50.00</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold fs-5">Final Total:</td>
+                                <td class="text-end fw-bold fs-5 text-success">₹{{ "%.2f"|format(order.total_amount) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivery & Contact Details -->
+        <div class="col-lg-4">
+            <div class="card card-agri p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Delivery Details</h5>
+                <p class="small text-muted mb-2"><strong>Destination Address:</strong></p>
+                <p class="small text-dark bg-light p-3 rounded-3 mb-3">{{ order.delivery_address }}</p>
+
+                <p class="small text-muted mb-1"><strong>Payment Status:</strong></p>
+                <div class="badge bg-warning text-dark mb-3 p-2 d-inline-block">Cash on Delivery / Inspect upon Arrival</div>
+
+                <div class="alert alert-success small mb-0">
+                    <i class="bi bi-telephone-fill me-1"></i> Farmer support contact verified.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Produce Listing - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-agri border-0 shadow-sm p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="fw-bold text-success mb-1">{{ action }} Farm Produce Listing</h3>
+                        <p class="text-muted small mb-0">Fill in accurate crop details, pricing, and available inventory.</p>
+                    </div>
+                    <a href="{{ url_for('marketplace.manage_listings') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Listings
+                    </a>
+                </div>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Produce Name / Variety</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Organic Sharbati Wheat" value="{{ listing.name if listing else '' }}" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Category</label>
+                            <select name="category" class="form-select" required>
+                                <option value="Grains" {% if listing and listing.category == 'Grains' %}selected{% endif %}>Grains & Cereals</option>
+                                <option value="Vegetables" {% if listing and listing.category == 'Vegetables' %}selected{% endif %}>Vegetables</option>
+                                <option value="Fruits" {% if listing and listing.category == 'Fruits' %}selected{% endif %}>Fruits</option>
+                                <option value="Oils & Seeds" {% if listing and listing.category == 'Oils & Seeds' %}selected{% endif %}>Oils & Seeds</option>
+                                <option value="Spices" {% if listing and listing.category == 'Spices' %}selected{% endif %}>Spices</option>
+                                <option value="Pulses" {% if listing and listing.category == 'Pulses' %}selected{% endif %}>Pulses / Dal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Selling Unit</label>
+                            <select name="unit" class="form-select" required>
+                                <option value="kg" {% if listing and listing.unit == 'kg' %}selected{% endif %}>Kilogram (kg)</option>
+                                <option value="quintal" {% if listing and listing.unit == 'quintal' %}selected{% endif %}>Quintal (100 kg)</option>
+                                <option value="litre" {% if listing and listing.unit == 'litre' %}selected{% endif %}>Litre</option>
+                                <option value="box" {% if listing and listing.unit == 'box' %}selected{% endif %}>Box / Crate</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Price per Unit (₹)</label>
+                            <input type="number" step="0.50" name="price" class="form-control" placeholder="45.00" value="{{ listing.price if listing else '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Current Stock Quantity</label>
+                            <input type="number" name="stock" class="form-control" placeholder="250" value="{{ listing.stock if listing else '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Minimum Order Quantity</label>
+                            <input type="number" name="min_order" class="form-control" placeholder="5" value="{{ listing.min_order if listing else '5' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Produce Description & Harvesting Method</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Describe harvest date, soil health, organic practices, and storage..." required>{{ listing.description if listing else '' }}</textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Farm Dispatch Location</label>
+                            <input type="text" name="location" class="form-control" placeholder="e.g. Gondal, Rajkot District" value="{{ listing.location if listing else 'Rajkot, Gujarat' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Produce Image (URL or File Upload)</label>
+                            <input type="text" name="image" class="form-control" placeholder="https://images.unsplash.com/..." value="{{ listing.image if listing else '' }}">
+                            <div class="form-text small">File upload will be supported in Phase 7 via secure local storage.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="isActiveSwitch" name="is_active" {% if not listing or listing.is_active %}checked{% endif %}>
+                        <label class="form-check-label fw-semibold small" for="isActiveSwitch">Publish immediately to active marketplace</label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('marketplace.manage_listings') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-agri px-5 fw-semibold">{{ action }} Listing</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

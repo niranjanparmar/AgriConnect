@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Price Alert Management - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('prices.index') }}" class="text-decoration-none text-muted">Price Tracker</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Price Alerts</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="fw-bold text-success mb-1">Mandi Price Alerts</h2>
+            <p class="text-muted small mb-0">Set automated rate thresholds and get notified when target prices are reached in your chosen APMC mandi.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- New Alert Rule Configuration -->
+        <div class="col-lg-5">
+            <div class="card card-agri p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-bell-fill text-warning me-2"></i> Create Alert Rule</h5>
+                <form method="POST" action="{{ url_for('prices.alerts') }}">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Commodity / Crop</label>
+                        <select name="crop" class="form-select" required>
+                            {% for c in crops %}
+                            <option value="{{ c }}">{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Target APMC Mandi</label>
+                        <select name="market" class="form-select" required>
+                            {% for m in markets %}
+                            <option value="{{ m }}">{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Condition</label>
+                            <select name="condition" class="form-select">
+                                <option value="Above" selected>Rises Above</option>
+                                <option value="Below">Falls Below</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Target (₹ / Quintal)</label>
+                            <input type="number" name="target_price" class="form-control" placeholder="2800" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-agri w-100 fw-semibold">
+                        <i class="bi bi-plus-circle me-1"></i> Save Alert Rule
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Active Alerts Table -->
+        <div class="col-lg-7">
+            <div class="card card-agri p-4">
+                <h5 class="fw-bold mb-3">Active Alert Subscriptions</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Crop</th>
+                                <th>Market</th>
+                                <th>Threshold</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in alerts %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ a.crop }}</td>
+                                <td>{{ a.market }}</td>
+                                <td class="fw-semibold">{{ a.condition }} ₹{{ "{:,.2f}".format(a.target_price) }}</td>
+                                <td>
+                                    <span class="badge bg-success-subtle text-success"><i class="bi bi-bell me-1"></i> Active</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger" title="Delete Alert"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

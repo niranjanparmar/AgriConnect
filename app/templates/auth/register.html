@@ -1,14 +1,99 @@
 {% extends "base.html" %}
+
 {% block title %}Register - AgriConnect{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card p-4 border-0 shadow-sm rounded-4">
-                <h3 class="fw-bold text-center text-success mb-3">Create an Account</h3>
-                <p class="text-center text-muted small">Join as a local agricultural producer or consumer</p>
-                <div class="alert alert-info small">Registration system with role-selection will be activated in Phase 5.</div>
-                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary w-100">Back to Home</a>
+        <div class="col-md-8 col-lg-6">
+            <div class="card card-agri border-0 shadow p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="display-6 text-success mb-2">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <h3 class="fw-bold">Create Your Account</h3>
+                    <p class="text-muted small">Join India's premier transparent agricultural network</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <!-- Account Role Selection -->
+                    <label class="form-label fw-semibold small">Choose Account Type</label>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="role" id="roleFarmer" value="farmer" checked autocomplete="off">
+                            <label class="btn btn-outline-success w-100 p-2 text-start" for="roleFarmer">
+                                <div class="fw-bold"><i class="bi bi-flower1 me-1"></i> Farmer</div>
+                                <div class="small text-muted" style="font-size: 0.75rem;">Sell harvest & track market rates</div>
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="role" id="roleConsumer" value="consumer" autocomplete="off">
+                            <label class="btn btn-outline-success w-100 p-2 text-start" for="roleConsumer">
+                                <div class="fw-bold"><i class="bi bi-cart3 me-1"></i> Consumer</div>
+                                <div class="small text-muted" style="font-size: 0.75rem;">Order fresh farm products directly</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" placeholder="Ramesh Patel" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control" placeholder="+91 98765 43210" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Email Address</label>
+                        <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">State</label>
+                            <select name="state" class="form-select" required>
+                                <option value="Gujarat" selected>Gujarat</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="Rajasthan">Rajasthan</option>
+                                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">District / City</label>
+                            <input type="text" name="district" class="form-control" placeholder="Rajkot" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Password</label>
+                            <input type="password" name="password" class="form-control" placeholder="Minimum 8 characters" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Confirm Password</label>
+                            <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter password" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="termsCheck" required checked>
+                        <label class="form-check-label small" for="termsCheck">
+                            I agree to the <a href="{{ url_for('main.about') }}" class="text-success text-decoration-none">Terms of Service</a> & Direct Agri-Trade Guidelines.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-agri w-100 py-2 fw-semibold mb-3">
+                        <i class="bi bi-person-check-fill me-1"></i> Complete Registration
+                    </button>
+
+                    <div class="text-center small text-muted">
+                        Already have an account? <a href="{{ url_for('auth.login') }}" class="fw-semibold text-success text-decoration-none">Log in here</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

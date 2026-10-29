@@ -3,50 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AgriConnect - Connecting Farmers & Consumers{% endblock %}</title>
+    <title>{% block title %}AgriConnect - Farmer-to-Consumer & Crop Price Intelligence{% endblock %}</title>
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom Theme Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-    <!-- Top Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm sticky-top">
+    <!-- Top Academic / Demo Notice Bar -->
+    <aside class="bg-dark text-white-50 py-1 small border-bottom border-secondary text-center" aria-label="Project Status Notice">
+        <div class="container d-flex justify-content-between align-items-center flex-wrap">
+            <span><i class="bi bi-mortarboard-fill text-warning me-1"></i> IPE College Engineering Project — <strong>AgriConnect Platform</strong></span>
+            <span class="d-none d-md-inline"><i class="bi bi-shield-check text-success me-1"></i> Role-Based Access • Transparent APMC Mandi Data</span>
+        </div>
+    </aside>
+
+    <!-- Main Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-agri sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
-                <i class="bi bi-flower1 fs-4 text-warning"></i>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
+                <i class="bi bi-flower1 fs-3 text-warning"></i>
                 <span>Agri<span class="text-warning">Connect</span></span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarContent">
+                <!-- Left Nav Links -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('main.index') }}"><i class="bi bi-house-door me-1"></i> Home</a>
+                        <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}">
+                            <i class="bi bi-house-door me-1"></i> Home
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('marketplace.index') }}"><i class="bi bi-shop me-1"></i> Marketplace</a>
+                        <a class="nav-link {% if request.endpoint == 'marketplace.index' %}active{% endif %}" href="{{ url_for('marketplace.index') }}">
+                            <i class="bi bi-shop me-1"></i> Marketplace
+                        </a>
+                    </li>
+                    <!-- Dropdown for Price Intelligence -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if 'prices.' in (request.endpoint or '') %}active{% endif %}" href="#" id="priceTrackerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-graph-up-arrow me-1"></i> Mandi Prices
+                        </a>
+                        <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="priceTrackerDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('prices.index') }}"><i class="bi bi-search me-2 text-success"></i> Price Tracker</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('prices.compare') }}"><i class="bi bi-arrow-left-right me-2 text-primary"></i> Market Comparison</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('prices.trends') }}"><i class="bi bi-bar-chart-line me-2 text-warning"></i> Historical Trends</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('prices.alerts') }}"><i class="bi bi-bell me-2 text-danger"></i> Price Alerts</a></li>
+                        </ul>
+                    </li>
+                    <!-- Role Portals Dropdown for easy evaluation -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="rolePortalsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-badge me-1"></i> Dashboards
+                        </a>
+                        <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="rolePortalsDropdown">
+                            <li><h6 class="dropdown-header text-uppercase text-muted">Farmer Module</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('marketplace.farmer_dashboard') }}"><i class="bi bi-speedometer2 me-2 text-success"></i> Farmer Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('marketplace.manage_listings') }}"><i class="bi bi-list-check me-2 text-success"></i> Manage Produce</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('orders.farmer_orders') }}"><i class="bi bi-boxes me-2 text-success"></i> Farmer Order Queue</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header text-uppercase text-muted">Consumer Module</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('orders.consumer_dashboard') }}"><i class="bi bi-person-workspace me-2 text-primary"></i> Consumer Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('orders.order_history') }}"><i class="bi bi-clock-history me-2 text-primary"></i> Order History</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('prices.index') }}"><i class="bi bi-graph-up-arrow me-1"></i> Price Tracker</a>
+                        <a class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}" href="{{ url_for('main.about') }}">
+                            <i class="bi bi-info-circle me-1"></i> About
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.about') }}"><i class="bi bi-info-circle me-1"></i> About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.contact') }}"><i class="bi bi-envelope me-1"></i> Contact</a>
+                        <a class="nav-link {% if request.endpoint == 'main.contact' %}active{% endif %}" href="{{ url_for('main.contact') }}">
+                            <i class="bi bi-envelope me-1"></i> Contact
+                        </a>
                     </li>
                 </ul>
+
+                <!-- Right Nav Controls (Cart, Profile, Auth) -->
                 <div class="d-flex align-items-center gap-2">
-                    <a href="{{ url_for('orders.cart') }}" class="btn btn-outline-light position-relative me-2">
-                        <i class="bi bi-cart3"></i>
-                        <span class="visually-hidden">Cart</span>
+                    <a href="{{ url_for('orders.cart') }}" class="btn btn-outline-light position-relative me-2" title="View Shopping Cart">
+                        <i class="bi bi-cart3 fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
+                            2
+                            <span class="visually-hidden">items in cart</span>
+                        </span>
                     </a>
+                    
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-light me-1" title="User Profile & Settings">
+                        <i class="bi bi-person-circle"></i>
+                    </a>
+
                     <a href="{{ url_for('auth.login') }}" class="btn btn-light text-success fw-semibold">Login</a>
                     <a href="{{ url_for('auth.register') }}" class="btn btn-warning fw-semibold">Register</a>
                 </div>
@@ -54,13 +114,13 @@
         </div>
     </nav>
 
-    <!-- Flash Notification Messages -->
+    <!-- Flash Alert Container -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show shadow-sm" role="alert">
-                        {{ message }}
+                        <i class="bi bi-info-circle me-2"></i> {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
@@ -68,41 +128,72 @@
         {% endwith %}
     </div>
 
-    <!-- Main Content Block -->
+    <!-- Main Content Body -->
     <main class="flex-grow-1">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Global Footer -->
-    <footer class="bg-dark text-white pt-4 pb-3 mt-5">
+    <footer class="bg-dark text-white pt-5 pb-3 mt-5 border-top border-success border-4">
         <div class="container text-center text-md-start">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <h5 class="fw-bold text-success"><i class="bi bi-flower1 text-warning"></i> AgriConnect</h5>
-                    <p class="small text-muted">A modern digital bridge empowering Indian farmers with fair market reach and transparent agricultural crop price tracking.</p>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="fw-bold text-success mb-3">
+                        <i class="bi bi-flower1 text-warning me-1"></i> AgriConnect
+                    </h5>
+                    <p class="text-white-50 small mb-3">
+                        AgriConnect is an integrated dual-module platform that empowers Indian agricultural growers with direct farmer-to-consumer e-commerce while providing transparent APMC mandi price tracking.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-success-subtle text-success">Flask 3.0</span>
+                        <span class="badge bg-primary-subtle text-primary">PostgreSQL</span>
+                        <span class="badge bg-warning-subtle text-warning">Bootstrap 5</span>
+                        <span class="badge bg-info-subtle text-info">Chart.js</span>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <h6 class="text-uppercase fw-semibold mb-2">Quick Links</h6>
+
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-uppercase fw-bold text-warning mb-3">Marketplace</h6>
                     <ul class="list-unstyled small">
-                        <li><a href="{{ url_for('marketplace.index') }}" class="text-secondary text-decoration-none">Direct Marketplace</a></li>
-                        <li><a href="{{ url_for('prices.index') }}" class="text-secondary text-decoration-none">Crop Price Trends</a></li>
-                        <li><a href="{{ url_for('main.about') }}" class="text-secondary text-decoration-none">About the Platform</a></li>
+                        <li class="mb-2"><a href="{{ url_for('marketplace.index') }}" class="text-white-50 text-decoration-none hover-link">Browse Produce</a></li>
+                        <li class="mb-2"><a href="{{ url_for('marketplace.farmer_dashboard') }}" class="text-white-50 text-decoration-none hover-link">Farmer Portal</a></li>
+                        <li class="mb-2"><a href="{{ url_for('orders.cart') }}" class="text-white-50 text-decoration-none hover-link">Shopping Cart</a></li>
+                        <li class="mb-2"><a href="{{ url_for('orders.order_history') }}" class="text-white-50 text-decoration-none hover-link">Order Status</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <h6 class="text-uppercase fw-semibold mb-2">College Project</h6>
-                    <p class="small text-muted mb-0">Built with Python Flask, PostgreSQL, Bootstrap 5, & Chart.js for the IPE Engineering Capstone Project.</p>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-uppercase fw-bold text-warning mb-3">Mandi Price Tracker</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="{{ url_for('prices.index') }}" class="text-white-50 text-decoration-none hover-link">APMC Daily Rates</a></li>
+                        <li class="mb-2"><a href="{{ url_for('prices.compare') }}" class="text-white-50 text-decoration-none hover-link">Inter-Market Comparison</a></li>
+                        <li class="mb-2"><a href="{{ url_for('prices.trends') }}" class="text-white-50 text-decoration-none hover-link">Historical Price Trends</a></li>
+                        <li class="mb-2"><a href="{{ url_for('prices.alerts') }}" class="text-white-50 text-decoration-none hover-link">Price Alert Subscriptions</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-uppercase fw-bold text-warning mb-3">Project & Contact</h6>
+                    <p class="small text-white-50 mb-2"><i class="bi bi-geo-alt-fill text-warning me-2"></i> Marwadi University / College</p>
+                    <p class="small text-white-50 mb-2"><i class="bi bi-code-slash text-warning me-2"></i> IPE Capstone Project</p>
+                    <p class="small text-white-50 mb-0"><i class="bi bi-envelope-fill text-warning me-2"></i> contact@agriconnect.local</p>
                 </div>
             </div>
-            <hr class="border-secondary my-2">
-            <div class="text-center small text-secondary">
-                &copy; 2026 AgriConnect. Developed for academic demonstration.
+
+            <hr class="border-secondary my-4">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap small text-white-50">
+                <p class="mb-0">&copy; 2026 AgriConnect. Developed for academic presentation and research.</p>
+                <p class="mb-0">Designed with modern responsive UI and accessible web standards.</p>
             </div>
         </div>
     </footer>
 
     <!-- Bootstrap 5 JavaScript Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Chart.js for Price Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Custom Application Script -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
 </body>

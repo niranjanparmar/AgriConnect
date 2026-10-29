@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Historical Crop Price Trends - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('prices.index') }}" class="text-decoration-none text-muted">Price Tracker</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Historical Trends</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <span class="badge bg-warning text-dark px-3 py-1 mb-1">Time-Series Analytics</span>
+            <h2 class="fw-bold mb-0">Historical Crop Price Trends</h2>
+            <p class="text-muted small mb-0">Analyze multi-day price fluctuations and seasonality patterns to make informed farm marketing decisions.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('prices.compare') }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-left-right me-1"></i> Market Comparison
+            </a>
+            <a href="{{ url_for('prices.alerts') }}" class="btn btn-agri btn-sm">
+                <i class="bi bi-bell me-1"></i> Setup Price Alert
+            </a>
+        </div>
+    </div>
+
+    <!-- Trend Filter -->
+    <div class="card card-agri p-3 mb-4">
+        <form method="GET" action="{{ url_for('prices.trends') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold mb-1">Select Crop Variety:</label>
+                <select name="crop" class="form-select" onchange="this.form.submit()">
+                    {% for c in crops %}
+                    <option value="{{ c }}" {% if selected_crop.lower() == c.lower() %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold mb-1">Time Horizon:</label>
+                <select class="form-select" disabled>
+                    <option selected>Past 7 Days (Daily Interval)</option>
+                    <option>Past 30 Days</option>
+                    <option>Quarterly (Season Trend)</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-agri w-100" style="margin-top: 24px;">
+                    <i class="bi bi-filter me-1"></i> Apply Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Main Chart Card -->
+    <div class="card card-agri p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h5 class="fw-bold mb-0">Daily Price Curve: <strong>{{ selected_crop }}</strong> (₹ / Quintal)</h5>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">Upward Momentum (+2.6%)</span>
+        </div>
+        <div style="height: 360px;">
+            <canvas id="historicalPriceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Context & Insights -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card card-agri p-4 h-100">
+                <h5 class="fw-bold text-success mb-2"><i class="bi bi-lightbulb me-2"></i> Trend Intelligence Insight</h5>
+                <p class="small text-muted mb-0">
+                    The 7-day moving average for {{ selected_crop }} indicates steady price stability with strong consumer festival demand. Selling within the modal range of <strong>₹2,720 – ₹2,750</strong> offers an optimal risk-reward ratio for regional farmers.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-agri p-4 h-100">
+                <h5 class="fw-bold text-primary mb-2"><i class="bi bi-shield-check me-2"></i> Verified Agmarknet Schema</h5>
+                <p class="small text-muted mb-0">
+                    Price data follows standard Indian mandi reporting metrics with daily recorded minimum, maximum, and modal wholesale auction values normalized to metric quintals.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('historicalPriceChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ trend_labels|tojson }},
+                datasets: [
+                    {
+                        label: 'Modal Rate (₹)',
+                        data: {{ modal_trend|tojson }},
+                        borderColor: 'rgb(46, 125, 50)',
+                        backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    },
+                    {
+                        label: 'Max Price (₹)',
+                        data: {{ max_trend|tojson }},
+                        borderColor: 'rgb(211, 47, 47)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Min Price (₹)',
+                        data: {{ min_trend|tojson }},
+                        borderColor: 'rgb(141, 110, 99)',
+                        borderDash: [3, 3],
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(value) { return '₹' + value; }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

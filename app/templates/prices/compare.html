@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Market-to-Market Comparison - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('prices.index') }}" class="text-decoration-none text-muted">Price Tracker</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Market Comparison</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <span class="badge bg-primary-subtle text-primary px-3 py-1 mb-1">Comparative Market Analytics</span>
+            <h2 class="fw-bold mb-0">Inter-Mandi Crop Price Comparison</h2>
+            <p class="text-muted small mb-0">Compare pricing variations for the same crop across key regional trading hubs.</p>
+        </div>
+        <a href="{{ url_for('prices.trends') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-clock-history me-1"></i> View Historical Trends
+        </a>
+    </div>
+
+    <!-- Commodity Selection Filter -->
+    <div class="card card-agri p-3 mb-4">
+        <form method="GET" action="{{ url_for('prices.compare') }}" class="row g-2 align-items-center">
+            <div class="col-md-8">
+                <label class="form-label small fw-semibold mb-1">Select Crop to Compare Across APMC Mandis:</label>
+                <select name="crop" class="form-select" onchange="this.form.submit()">
+                    {% for c in crops %}
+                    <option value="{{ c }}" {% if selected_crop.lower() == c.lower() %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-agri w-100" style="margin-top: 24px;">
+                    <i class="bi bi-arrow-repeat me-1"></i> Refresh Comparison
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Comparative Chart Card -->
+    <div class="card card-agri p-4 mb-4">
+        <h5 class="fw-bold mb-3">Mandi Rate Spread for <strong>{{ selected_crop }}</strong></h5>
+        <div style="height: 320px;">
+            <canvas id="marketComparisonChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Detailed Market Comparison Table -->
+    <div class="card card-agri overflow-hidden border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>APMC Market</th>
+                        <th>State</th>
+                        <th>Min Price (₹)</th>
+                        <th>Max Price (₹)</th>
+                        <th>Modal Price (₹)</th>
+                        <th>Price Difference vs Lowest</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set min_baseline = records|map(attribute='modal_price')|min %}
+                    {% for r in records %}
+                    <tr>
+                        <td class="fw-bold text-dark">{{ r.market }}</td>
+                        <td>{{ r.state }}</td>
+                        <td class="text-secondary">₹{{ "{:,.2f}".format(r.min_price) }}</td>
+                        <td class="text-danger">₹{{ "{:,.2f}".format(r.max_price) }}</td>
+                        <td class="text-success fw-bold fs-6">₹{{ "{:,.2f}".format(r.modal_price) }}</td>
+                        <td>
+                            {% set diff = r.modal_price - min_baseline %}
+                            {% if diff > 0 %}
+                            <span class="badge bg-success-subtle text-success">+₹{{ "{:,.2f}".format(diff) }} premium</span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">Base rate</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('marketComparisonChart');
+    if (ctx) {
+        const labels = {{ records|map(attribute='market')|list|tojson }};
+        const minPrices = {{ records|map(attribute='min_price')|list|tojson }};
+        const modalPrices = {{ records|map(attribute='modal_price')|list|tojson }};
+        const maxPrices = {{ records|map(attribute='max_price')|list|tojson }};
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Min Price (₹)',
+                        data: minPrices,
+                        backgroundColor: 'rgba(141, 110, 99, 0.7)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Modal Benchmark (₹)',
+                        data: modalPrices,
+                        backgroundColor: 'rgba(46, 125, 50, 0.85)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Max Price (₹)',
+                        data: maxPrices,
+                        backgroundColor: 'rgba(211, 47, 47, 0.7)',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) { return '₹' + value; }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

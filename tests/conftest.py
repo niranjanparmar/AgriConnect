@@ -25,3 +25,4 @@ def client(app):
 def runner(app):
     """Test CLI runner for invoking Flask CLI commands."""
     return app.test_cli_runner()
+

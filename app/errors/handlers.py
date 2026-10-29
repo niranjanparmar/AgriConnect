@@ -20,3 +20,4 @@ def not_found(error):
 @errors_bp.app_errorhandler(500)
 def internal_server_error(error):
     return render_template("errors/500.html", error=error), 500
+

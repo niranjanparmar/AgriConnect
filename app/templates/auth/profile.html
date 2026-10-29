@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile & Settings - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-4">
+            <div class="card card-agri p-4 text-center mb-4">
+                <div class="display-4 text-success mb-2">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <h4 class="fw-bold mb-1">{{ user.full_name }}</h4>
+                <div class="mb-2">
+                    <span class="badge badge-farmer px-3 py-1">{{ user.role }} Account</span>
+                </div>
+                <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>{{ user.district }}, {{ user.state }}</p>
+                <div class="border-top pt-3 small text-muted">
+                    Member since <strong>{{ user.joined_date }}</strong>
+                </div>
+            </div>
+
+            <div class="list-group shadow-sm rounded-4 border-0">
+                <a href="#personal-info" class="list-group-item list-group-item-action active bg-success border-success">
+                    <i class="bi bi-person me-2"></i> Personal Details
+                </a>
+                <a href="{{ url_for('marketplace.farmer_dashboard') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-speedometer2 me-2"></i> Farmer Dashboard
+                </a>
+                <a href="{{ url_for('marketplace.manage_listings') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-boxes me-2"></i> Manage Produce Listings
+                </a>
+                <a href="{{ url_for('orders.farmer_orders') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-receipt me-2"></i> Orders & Deliveries
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="list-group-item list-group-item-action text-danger">
+                    <i class="bi bi-box-arrow-right me-2"></i> Log Out
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Profile Form -->
+        <div class="col-lg-8">
+            <div class="card card-agri p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0">Account Profile & Farm Settings</h4>
+                    <span class="badge bg-light text-dark border">Role: {{ user.role }}</span>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.profile') }}">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Email Address</label>
+                            <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ user.phone }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Farm / Business Name</label>
+                            <input type="text" name="farm_name" class="form-control" value="{{ user.farm_name }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Farm / Dispatch Address</label>
+                        <textarea name="address" class="form-control" rows="2">{{ user.address }}</textarea>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">State</label>
+                            <input type="text" name="state" class="form-control" value="{{ user.state }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">District</label>
+                            <input type="text" name="district" class="form-control" value="{{ user.district }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">PIN Code</label>
+                            <input type="text" name="pincode" class="form-control" value="{{ user.pincode }}">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h5 class="fw-bold mb-3">Change Security Password</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Current Password</label>
+                            <input type="password" class="form-control" placeholder="••••••••">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">New Password</label>
+                            <input type="password" class="form-control" placeholder="Leave blank to keep current">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="reset" class="btn btn-outline-secondary px-4">Discard</button>
+                        <button type="submit" class="btn btn-agri px-4">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

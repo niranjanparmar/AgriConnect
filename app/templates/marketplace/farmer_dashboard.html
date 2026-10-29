@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Dashboard - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <span class="badge badge-farmer px-3 py-1 mb-1">Farmer Control Center</span>
+            <h2 class="fw-bold mb-0">Farmer Dashboard</h2>
+            <p class="text-muted small mb-0">Monitor your crop sales, manage inventory, and process consumer orders.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('marketplace.new_listing') }}" class="btn btn-agri">
+                <i class="bi bi-plus-lg me-1"></i> Add Produce Listing
+            </a>
+            <a href="{{ url_for('prices.index') }}" class="btn btn-agri-outline">
+                <i class="bi bi-graph-up me-1"></i> Check Mandi Rates
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="small text-muted fw-semibold mb-1">Total Revenue</div>
+                <div class="fs-3 fw-bold text-success">₹{{ "{:,.2f}".format(stats.total_revenue) }}</div>
+                <div class="small text-muted"><i class="bi bi-arrow-up text-success"></i> +12% this month</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card stat-warning">
+                <div class="small text-muted fw-semibold mb-1">Active Listings</div>
+                <div class="fs-3 fw-bold text-dark">{{ stats.active_listings }} Crops</div>
+                <div class="small text-muted"><a href="{{ url_for('marketplace.manage_listings') }}" class="text-decoration-none">Manage inventory &rarr;</a></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card stat-earth">
+                <div class="small text-muted fw-semibold mb-1">Completed Orders</div>
+                <div class="fs-3 fw-bold text-dark">{{ stats.total_orders }}</div>
+                <div class="small text-muted">Across 3 districts</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="small text-muted fw-semibold mb-1">Pending Dispatch</div>
+                <div class="fs-3 fw-bold text-warning">{{ stats.pending_shipments }} Orders</div>
+                <div class="small text-muted"><a href="{{ url_for('orders.farmer_orders') }}" class="text-decoration-none">Review queue &rarr;</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Analytics & Orders Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Monthly Sales Chart -->
+        <div class="col-lg-7">
+            <div class="card card-agri p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Harvest Sales Performance (2026)</h5>
+                    <span class="badge bg-light text-muted border">Monthly Revenue</span>
+                </div>
+                <div style="height: 260px;">
+                    <canvas id="farmerSalesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Inventory Snapshot -->
+        <div class="col-lg-5">
+            <div class="card card-agri p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Live Crop Stock Status</h5>
+                    <a href="{{ url_for('marketplace.manage_listings') }}" class="small text-decoration-none">Edit Stock</a>
+                </div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">Sharbati Wheat</div>
+                            <small class="text-muted">₹42.00 / kg</small>
+                        </div>
+                        <span class="badge bg-success">450 kg in stock</span>
+                    </div>
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">Organic Red Onions</div>
+                            <small class="text-muted">₹30.00 / kg</small>
+                        </div>
+                        <span class="badge bg-success">300 kg in stock</span>
+                    </div>
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">Organic Potatoes</div>
+                            <small class="text-muted">₹25.00 / kg</small>
+                        </div>
+                        <span class="badge bg-success">500 kg in stock</span>
+                    </div>
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">Unjha Cumin (Jeera)</div>
+                            <small class="text-muted">₹340.00 / kg</small>
+                        </div>
+                        <span class="badge bg-danger">Sold Out</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Queue -->
+    <div class="card card-agri p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Recent Inbound Orders</h5>
+            <a href="{{ url_for('orders.farmer_orders') }}" class="btn btn-sm btn-agri-outline">View All Orders</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Consumer</th>
+                        <th>Harvest Items</th>
+                        <th>Amount</th>
+                        <th>Order Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ord in recent_orders %}
+                    <tr>
+                        <td class="fw-semibold">{{ ord.order_id }}</td>
+                        <td>{{ ord.customer }}</td>
+                        <td>{{ ord.items }}</td>
+                        <td class="fw-bold text-success">₹{{ "%.2f"|format(ord.amount) }}</td>
+                        <td>{{ ord.date }}</td>
+                        <td>
+                            {% if ord.status == 'Pending' %}
+                            <span class="badge bg-warning text-dark">{{ ord.status }}</span>
+                            {% elif ord.status == 'Confirmed' %}
+                            <span class="badge bg-primary">{{ ord.status }}</span>
+                            {% else %}
+                            <span class="badge bg-success">{{ ord.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('orders.farmer_orders') }}" class="btn btn-sm btn-outline-secondary">Update Status</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('farmerSalesChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [{
+                    label: 'Sales Revenue (₹)',
+                    data: [8200, 11500, 14200, 9800, 16300, 18450],
+                    backgroundColor: 'rgba(46, 125, 50, 0.75)',
+                    borderColor: 'rgb(46, 125, 50)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return '₹' + value; }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
