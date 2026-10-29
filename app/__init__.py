@@ -25,6 +25,7 @@ def create_app(config_name=None):
     from app.orders import orders_bp
     from app.prices import prices_bp
     from app.errors import errors_bp
+    from app.cli import cli_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
@@ -32,6 +33,7 @@ def create_app(config_name=None):
     app.register_blueprint(orders_bp)
     app.register_blueprint(prices_bp)
     app.register_blueprint(errors_bp)
+    app.register_blueprint(cli_bp)
 
     # Ensure upload directory exists
     upload_folder = app.config.get("UPLOAD_FOLDER")

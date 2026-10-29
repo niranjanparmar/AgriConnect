@@ -17,6 +17,10 @@ login_manager.login_message_category = "info"
 
 @login_manager.user_loader
 def load_user(user_id):
-    """Temporary stub until Phase 4/5 User model is wired up."""
-    return None
+    """Load User by primary key for Flask-Login session management."""
+    from app.models.user import User
+    try:
+        return db.session.get(User, int(user_id))
+    except (TypeError, ValueError):
+        return None
 
