@@ -26,13 +26,10 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small">Category</label>
-                            <select name="category" class="form-select" required>
-                                <option value="Grains" {% if listing and listing.category == 'Grains' %}selected{% endif %}>Grains & Cereals</option>
-                                <option value="Vegetables" {% if listing and listing.category == 'Vegetables' %}selected{% endif %}>Vegetables</option>
-                                <option value="Fruits" {% if listing and listing.category == 'Fruits' %}selected{% endif %}>Fruits</option>
-                                <option value="Oils & Seeds" {% if listing and listing.category == 'Oils & Seeds' %}selected{% endif %}>Oils & Seeds</option>
-                                <option value="Spices" {% if listing and listing.category == 'Spices' %}selected{% endif %}>Spices</option>
-                                <option value="Pulses" {% if listing and listing.category == 'Pulses' %}selected{% endif %}>Pulses / Dal</option>
+                            <select name="category_id" class="form-select" required>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if listing and listing.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-6">

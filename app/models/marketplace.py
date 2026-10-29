@@ -53,6 +53,28 @@ class ProduceListing(db.Model):
     cart_items = db.relationship("CartItem", back_populates="listing", cascade="all, delete-orphan")
     order_items = db.relationship("OrderItem", back_populates="listing")
 
+    @property
+    def price(self):
+        """Convenience alias for price_per_unit."""
+        return self.price_per_unit
+
+    @property
+    def stock(self):
+        """Convenience alias for stock_quantity."""
+        return self.stock_quantity
+
+    @property
+    def farmer_name(self):
+        """Convenience accessor for farmer user name."""
+        if self.farmer and self.farmer.user:
+            return self.farmer.user.full_name
+        return "Registered Farmer"
+
+    @property
+    def image(self):
+        """Fallback image if image_url is missing."""
+        return self.image_url or "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80"
+
     def __repr__(self) -> str:
         return f"<ProduceListing {self.name} - ₹{self.price_per_unit}/{self.unit}>"
 

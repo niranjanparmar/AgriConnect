@@ -1,30 +1,42 @@
 {% extends "base.html" %}
+
 {% block title %}Contact - AgriConnect{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card p-4 border-0 shadow-sm rounded-4">
-                <h3 class="fw-bold text-success mb-3">Get in Touch</h3>
-                <p class="text-muted">Have inquiries regarding the AgriConnect platform or crop price data integration? Leave us a message.</p>
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" class="form-control" placeholder="Your name">
+        <div class="col-md-8 col-lg-6">
+            <div class="card card-agri p-4 p-md-5 border-0 shadow-sm">
+                <div class="text-center mb-4">
+                    <div class="display-6 text-success mb-2">
+                        <i class="bi bi-envelope-paper-heart-fill"></i>
                     </div>
+                    <h3 class="fw-bold">Get in Touch</h3>
+                    <p class="text-muted small">Have inquiries regarding the AgriConnect platform or crop price data integration? Leave us a message.</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('main.contact') }}">
                     <div class="mb-3">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" class="form-control" placeholder="name@example.com">
+                        <label class="form-label fw-semibold small">Full Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="Your name" required>
                     </div>
+
                     <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control" rows="4" placeholder="Your message..."></textarea>
+                        <label class="form-label fw-semibold small">Email Address</label>
+                        <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
                     </div>
-                    <button type="button" class="btn btn-success px-4">Send Message</button>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Your Message</label>
+                        <textarea name="message" class="form-control" rows="4" placeholder="How can we assist you?" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-agri w-100 py-2 fw-semibold">
+                        <i class="bi bi-send me-1"></i> Send Message
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-

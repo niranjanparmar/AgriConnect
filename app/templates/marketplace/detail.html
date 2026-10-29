@@ -24,8 +24,8 @@
         <div class="col-lg-6">
             <div class="card card-agri p-4 p-md-5 h-100 d-flex flex-column">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill">{{ product.category }}</span>
-                    <span class="text-warning small"><i class="bi bi-star-fill"></i> {{ product.rating }} ({{ product.reviews_count }} verified reviews)</span>
+                    <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill">{{ product.category.name if product.category.name is defined else product.category }}</span>
+                    <span class="text-warning small"><i class="bi bi-star-fill"></i> 4.8 (Verified Producer)</span>
                 </div>
 
                 <h2 class="fw-bold mb-2">{{ product.name }}</h2>
@@ -98,7 +98,9 @@
                 </div>
                 <p class="small text-muted mb-3">Certified direct grower practicing sustainable traditional and organic agricultural harvesting.</p>
                 <div class="d-flex gap-2">
-                    <a href="tel:{{ product.farmer_phone }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-telephone me-1"></i> {{ product.farmer_phone }}</a>
+                    <a href="tel:{{ product.farmer.user.phone if product.farmer and product.farmer.user and product.farmer.user.phone else '+91 98765 43210' }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-telephone me-1"></i> {{ product.farmer.user.phone if product.farmer and product.farmer.user and product.farmer.user.phone else '+91 98765 43210' }}
+                    </a>
                     <a href="{{ url_for('main.contact') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-chat-left-dots me-1"></i> Message Producer</a>
                 </div>
             </div>

@@ -68,7 +68,7 @@
                     {% set min_baseline = records|map(attribute='modal_price')|min %}
                     {% for r in records %}
                     <tr>
-                        <td class="fw-bold text-dark">{{ r.market }}</td>
+                        <td class="fw-bold text-dark">{{ r.market_name if r.market_name is defined else r.market }}</td>
                         <td>{{ r.state }}</td>
                         <td class="text-secondary">₹{{ "{:,.2f}".format(r.min_price) }}</td>
                         <td class="text-danger">₹{{ "{:,.2f}".format(r.max_price) }}</td>
@@ -95,10 +95,10 @@
 document.addEventListener("DOMContentLoaded", function() {
     const ctx = document.getElementById('marketComparisonChart');
     if (ctx) {
-        const labels = {{ records|map(attribute='market')|list|tojson }};
-        const minPrices = {{ records|map(attribute='min_price')|list|tojson }};
-        const modalPrices = {{ records|map(attribute='modal_price')|list|tojson }};
-        const maxPrices = {{ records|map(attribute='max_price')|list|tojson }};
+        const labels = {{ records|map(attribute='market_name')|list|tojson }};
+        const minPrices = {{ records|map(attribute='min_price')|map('float')|list|tojson }};
+        const modalPrices = {{ records|map(attribute='modal_price')|map('float')|list|tojson }};
+        const maxPrices = {{ records|map(attribute='max_price')|map('float')|list|tojson }};
 
         new Chart(ctx, {
             type: 'bar',

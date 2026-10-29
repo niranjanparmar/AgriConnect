@@ -71,6 +71,26 @@ class CropPriceRecord(db.Model):
     crop = db.relationship("Crop", back_populates="price_records")
     market = db.relationship("Market", back_populates="price_records")
 
+    @property
+    def crop_name(self):
+        return self.crop.name if self.crop else ""
+
+    @property
+    def market_name(self):
+        return self.market.name if self.market else ""
+
+    @property
+    def state(self):
+        return self.market.state if self.market else ""
+
+    @property
+    def district(self):
+        return self.market.district if self.market else ""
+
+    @property
+    def unit(self):
+        return self.crop.standard_unit if self.crop else "Quintal (100 kg)"
+
     @staticmethod
     def generate_hash(crop_id, market_id, variety, arrival_date) -> str:
         """Create a deterministic SHA-256 fingerprint for idempotent duplicate prevention."""

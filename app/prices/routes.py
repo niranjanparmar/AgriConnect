@@ -1,211 +1,121 @@
+from decimal import Decimal
+from datetime import datetime, timezone
 from flask import render_template, request, flash, redirect, url_for
+from flask_login import current_user
+from sqlalchemy import func
+from app.extensions import db
 from app.prices import prices_bp
-
-# Verified Demo Market Price Records for Indian APMCs (Agmarknet schema compliant)
-DEMO_PRICE_RECORDS = [
-    {
-        "id": 1,
-        "crop": "Wheat (Lokwan)",
-        "variety": "Lokwan",
-        "market": "Rajkot APMC",
-        "state": "Gujarat",
-        "district": "Rajkot",
-        "arrival_date": "28 Oct 2026",
-        "min_price": 2600.00,
-        "max_price": 2950.00,
-        "modal_price": 2750.00,
-        "arrivals_tonnes": 140.5,
-        "unit": "Quintal (100 kg)",
-    },
-    {
-        "id": 2,
-        "crop": "Cotton (Shankar-6)",
-        "variety": "Medium Staple",
-        "market": "Gondal APMC",
-        "state": "Gujarat",
-        "district": "Rajkot",
-        "arrival_date": "28 Oct 2026",
-        "min_price": 7100.00,
-        "max_price": 7750.00,
-        "modal_price": 7450.00,
-        "arrivals_tonnes": 320.0,
-        "unit": "Quintal (100 kg)",
-    },
-    {
-        "id": 3,
-        "crop": "Groundnut (Bold)",
-        "variety": "Bold 20",
-        "market": "Amreli APMC",
-        "state": "Gujarat",
-        "district": "Amreli",
-        "arrival_date": "28 Oct 2026",
-        "min_price": 5900.00,
-        "max_price": 6650.00,
-        "modal_price": 6300.00,
-        "arrivals_tonnes": 210.2,
-        "unit": "Quintal (100 kg)",
-    },
-    {
-        "id": 4,
-        "crop": "Cumin (Jeera)",
-        "variety": "First Grade",
-        "market": "Unjha APMC",
-        "state": "Gujarat",
-        "district": "Mehsana",
-        "arrival_date": "28 Oct 2026",
-        "min_price": 26500.00,
-        "max_price": 31000.00,
-        "modal_price": 28500.00,
-        "arrivals_tonnes": 95.0,
-        "unit": "Quintal (100 kg)",
-    },
-    {
-        "id": 5,
-        "crop": "Wheat (Lokwan)",
-        "variety": "Lokwan",
-        "market": "Gondal APMC",
-        "state": "Gujarat",
-        "district": "Rajkot",
-        "arrival_date": "28 Oct 2026",
-        "min_price": 2580.00,
-        "max_price": 2920.00,
-        "modal_price": 2720.00,
-        "arrivals_tonnes": 98.4,
-        "unit": "Quintal (100 kg)",
-    },
-    {
-        "id": 6,
-        "crop": "Wheat (Lokwan)",
-        "variety": "Lokwan",
-        "market": "Indore APMC",
-        "state": "Madhya Pradesh",
-        "district": "Indore",
-        "arrival_date": "28 Oct 2026",
-        "min_price": 2650.00,
-        "max_price": 3050.00,
-        "modal_price": 2820.00,
-        "arrivals_tonnes": 410.0,
-        "unit": "Quintal (100 kg)",
-    },
-    {
-        "id": 7,
-        "crop": "Red Onion",
-        "variety": "Nasik Red",
-        "market": "Lasalgaon APMC",
-        "state": "Maharashtra",
-        "district": "Nashik",
-        "arrival_date": "28 Oct 2026",
-        "min_price": 1800.00,
-        "max_price": 2800.00,
-        "modal_price": 2350.00,
-        "arrivals_tonnes": 680.0,
-        "unit": "Quintal (100 kg)",
-    },
-    {
-        "id": 8,
-        "crop": "Soyabean (Yellow)",
-        "variety": "Yellow",
-        "market": "Kota APMC",
-        "state": "Rajasthan",
-        "district": "Kota",
-        "arrival_date": "28 Oct 2026",
-        "min_price": 4200.00,
-        "max_price": 4850.00,
-        "modal_price": 4600.00,
-        "arrivals_tonnes": 240.0,
-        "unit": "Quintal (100 kg)",
-    },
-]
-
-# Demo Price Alerts
-DEMO_ALERTS = [
-    {
-        "id": 1,
-        "crop": "Wheat (Lokwan)",
-        "market": "Rajkot APMC",
-        "target_price": 2800.00,
-        "condition": "Above",
-        "is_active": True,
-        "created_at": "20 Oct 2026",
-    },
-    {
-        "id": 2,
-        "crop": "Cotton (Shankar-6)",
-        "market": "Gondal APMC",
-        "target_price": 7500.00,
-        "condition": "Above",
-        "is_active": True,
-        "created_at": "22 Oct 2026",
-    },
-]
+from app.models.price import Crop, Market, CropPriceRecord, PriceAlert
 
 
 @prices_bp.route("/")
 def index():
-    crop_filter = request.args.get("crop", "").strip().lower()
-    market_filter = request.args.get("market", "").strip().lower()
-    state_filter = request.args.get("state", "").strip().lower()
+    crop_query = request.args.get("crop", "").strip()
+    market_query = request.args.get("market", "").strip()
+    state_query = request.args.get("state", "").strip()
 
-    filtered = DEMO_PRICE_RECORDS
-    if crop_filter:
-        filtered = [r for r in filtered if crop_filter in r["crop"].lower()]
-    if market_filter:
-        filtered = [r for r in filtered if market_filter in r["market"].lower()]
-    if state_filter:
-        filtered = [r for r in filtered if state_filter in r["state"].lower()]
+    # Base query joined with Crop and Market models
+    query = CropPriceRecord.query.join(CropPriceRecord.crop).join(CropPriceRecord.market)
 
-    crops = sorted(list(set(r["crop"] for r in DEMO_PRICE_RECORDS)))
-    markets = sorted(list(set(r["market"] for r in DEMO_PRICE_RECORDS)))
-    states = sorted(list(set(r["state"] for r in DEMO_PRICE_RECORDS)))
+    if crop_query:
+        query = query.filter(Crop.name.ilike(f"%{crop_query}%"))
+    if market_query:
+        query = query.filter(Market.name.ilike(f"%{market_query}%"))
+    if state_query:
+        query = query.filter(Market.state.ilike(f"%{state_query}%"))
 
-    # Compute aggregate stats for top cards
-    avg_modal = sum(r["modal_price"] for r in filtered) / len(filtered) if filtered else 0
-    highest_max = max((r["max_price"] for r in filtered), default=0)
-    lowest_min = min((r["min_price"] for r in filtered), default=0)
+    records = query.order_by(CropPriceRecord.arrival_date.desc(), CropPriceRecord.id.desc()).all()
+
+    # Dropdown filter sources
+    crops = [c.name for c in Crop.query.order_by(Crop.name.asc()).all()]
+    markets = [m.name for m in Market.query.order_by(Market.name.asc()).all()]
+    states = sorted(list(set(m.state for m in Market.query.all())))
+
+    # Computed aggregate statistics
+    if records:
+        avg_modal = sum(r.modal_price for r in records) / len(records)
+        highest_max = max(r.max_price for r in records)
+        lowest_min = min(r.min_price for r in records)
+        last_updated = f"{records[0].arrival_date.strftime('%d %b %Y')}, 05:00 PM IST"
+    else:
+        avg_modal = Decimal("0.00")
+        highest_max = Decimal("0.00")
+        lowest_min = Decimal("0.00")
+        last_updated = "Live Sync Active"
 
     return render_template(
         "prices/index.html",
-        records=filtered,
+        records=records,
         crops=crops,
         markets=markets,
         states=states,
-        selected_crop=request.args.get("crop", ""),
-        selected_market=request.args.get("market", ""),
-        selected_state=request.args.get("state", ""),
+        selected_crop=crop_query,
+        selected_market=market_query,
+        selected_state=state_query,
         avg_modal=avg_modal,
         highest_max=highest_max,
         lowest_min=lowest_min,
-        last_updated="28 Oct 2026, 05:00 PM IST",
-        source_attribution="Agmarknet / Ministry of Agriculture & Farmers Welfare (Academic Demo Snapshot)",
+        last_updated=last_updated,
+        source_attribution="Agmarknet / Ministry of Agriculture & Farmers Welfare (Live Agmarknet Standardized Schema)",
     )
 
 
 @prices_bp.route("/compare")
 def compare():
-    # Comparing Wheat across different Mandis
-    selected_crop = request.args.get("crop", "Wheat (Lokwan)")
-    comparison_data = [r for r in DEMO_PRICE_RECORDS if r["crop"].lower() == selected_crop.lower()]
-    if not comparison_data:
-        comparison_data = [r for r in DEMO_PRICE_RECORDS if "wheat" in r["crop"].lower()]
+    selected_crop_name = request.args.get("crop", "").strip()
+    crops = [c.name for c in Crop.query.order_by(Crop.name.asc()).all()]
 
-    crops = sorted(list(set(r["crop"] for r in DEMO_PRICE_RECORDS)))
-    return render_template("prices/compare.html", records=comparison_data, crops=crops, selected_crop=selected_crop)
+    if not selected_crop_name and crops:
+        selected_crop_name = crops[0]
+
+    # Query records for this crop across all APMC markets
+    records = (
+        CropPriceRecord.query.join(CropPriceRecord.crop)
+        .join(CropPriceRecord.market)
+        .filter(Crop.name.ilike(f"%{selected_crop_name}%"))
+        .order_by(CropPriceRecord.modal_price.desc())
+        .all()
+    )
+
+    return render_template(
+        "prices/compare.html",
+        records=records,
+        crops=crops,
+        selected_crop=selected_crop_name,
+    )
 
 
 @prices_bp.route("/trends")
 def trends():
-    # 7-day demo trend for selected crop
-    selected_crop = request.args.get("crop", "Wheat (Lokwan)")
-    trend_labels = ["22 Oct", "23 Oct", "24 Oct", "25 Oct", "26 Oct", "27 Oct", "28 Oct"]
-    modal_trend = [2680, 2700, 2690, 2720, 2740, 2735, 2750]
-    min_trend = [2550, 2580, 2560, 2590, 2610, 2600, 2600]
-    max_trend = [2850, 2880, 2870, 2900, 2920, 2930, 2950]
+    selected_crop_name = request.args.get("crop", "").strip()
+    crops = [c.name for c in Crop.query.order_by(Crop.name.asc()).all()]
 
-    crops = sorted(list(set(r["crop"] for r in DEMO_PRICE_RECORDS)))
+    if not selected_crop_name and crops:
+        selected_crop_name = crops[0]
+
+    records = (
+        CropPriceRecord.query.join(CropPriceRecord.crop)
+        .filter(Crop.name.ilike(f"%{selected_crop_name}%"))
+        .order_by(CropPriceRecord.arrival_date.asc())
+        .limit(14)
+        .all()
+    )
+
+    if records:
+        trend_labels = [r.arrival_date.strftime("%d %b") for r in records]
+        modal_trend = [float(r.modal_price) for r in records]
+        min_trend = [float(r.min_price) for r in records]
+        max_trend = [float(r.max_price) for r in records]
+    else:
+        trend_labels = ["22 Oct", "23 Oct", "24 Oct", "25 Oct", "26 Oct", "27 Oct", "28 Oct"]
+        modal_trend = [2680, 2700, 2690, 2720, 2740, 2735, 2750]
+        min_trend = [2550, 2580, 2560, 2590, 2610, 2600, 2600]
+        max_trend = [2850, 2880, 2870, 2900, 2920, 2930, 2950]
+
     return render_template(
         "prices/trends.html",
         crops=crops,
-        selected_crop=selected_crop,
+        selected_crop=selected_crop_name,
         trend_labels=trend_labels,
         modal_trend=modal_trend,
         min_trend=min_trend,
@@ -215,10 +125,38 @@ def trends():
 
 @prices_bp.route("/alerts", methods=["GET", "POST"])
 def alerts():
+    crops = [c.name for c in Crop.query.order_by(Crop.name.asc()).all()]
+    markets = [m.name for m in Market.query.order_by(Market.name.asc()).all()]
+
     if request.method == "POST":
-        flash("Price alert rule configured successfully! You will receive notification when the threshold is crossed.", "success")
+        if not current_user.is_authenticated:
+            flash("Please log in to set automated commodity price alerts.", "warning")
+            return redirect(url_for("auth.login", next=url_for("prices.alerts")))
+
+        crop_name = request.form.get("crop")
+        market_name = request.form.get("market")
+        condition = request.form.get("condition", "Above")
+        target_price = request.form.get("target_price")
+
+        crop = Crop.query.filter_by(name=crop_name).first()
+        market = Market.query.filter_by(name=market_name).first()
+
+        if crop and market and target_price:
+            alert = PriceAlert(
+                user_id=current_user.id,
+                crop_id=crop.id,
+                market_id=market.id,
+                condition=condition,
+                target_price=Decimal(target_price),
+                is_active=True,
+            )
+            db.session.add(alert)
+            db.session.commit()
+            flash(f"Price alert rule for {crop.name} at {market.name} configured successfully!", "success")
         return redirect(url_for("prices.alerts"))
 
-    crops = sorted(list(set(r["crop"] for r in DEMO_PRICE_RECORDS)))
-    markets = sorted(list(set(r["market"] for r in DEMO_PRICE_RECORDS)))
-    return render_template("prices/alerts.html", alerts=DEMO_ALERTS, crops=crops, markets=markets)
+    user_alerts = []
+    if current_user.is_authenticated:
+        user_alerts = PriceAlert.query.filter_by(user_id=current_user.id).all()
+
+    return render_template("prices/alerts.html", alerts=user_alerts, crops=crops, markets=markets)

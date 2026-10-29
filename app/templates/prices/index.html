@@ -121,20 +121,20 @@
                     {% for r in records %}
                     <tr>
                         <td>
-                            <div class="fw-bold text-dark">{{ r.crop }}</div>
+                            <div class="fw-bold text-dark">{{ r.crop_name if r.crop_name is defined else r.crop }}</div>
                             <small class="text-muted">{{ r.variety }}</small>
                         </td>
                         <td>
-                            <div class="fw-semibold">{{ r.market }}</div>
+                            <div class="fw-semibold">{{ r.market_name if r.market_name is defined else r.market }}</div>
                             <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ r.district }}, {{ r.state }}</small>
                         </td>
-                        <td>{{ r.arrival_date }}</td>
+                        <td>{{ r.arrival_date.strftime('%d %b %Y') if r.arrival_date.strftime is defined else r.arrival_date }}</td>
                         <td class="text-secondary fw-semibold">₹{{ "{:,.2f}".format(r.min_price) }}</td>
                         <td class="text-danger fw-semibold">₹{{ "{:,.2f}".format(r.max_price) }}</td>
                         <td class="text-success fw-bold fs-6">₹{{ "{:,.2f}".format(r.modal_price) }}</td>
                         <td><span class="badge bg-light text-dark border">{{ r.arrivals_tonnes }} MT</span></td>
                         <td>
-                            <a href="{{ url_for('prices.trends', crop=r.crop) }}" class="btn btn-sm btn-outline-primary" title="View Historical Trend">
+                            <a href="{{ url_for('prices.trends', crop=r.crop_name if r.crop_name is defined else r.crop) }}" class="btn btn-sm btn-outline-primary" title="View Historical Trend">
                                 <i class="bi bi-graph-up"></i>
                             </a>
                         </td>

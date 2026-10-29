@@ -1,190 +1,196 @@
-from flask import render_template, request, flash, redirect, url_for
+from decimal import Decimal
+from flask import render_template, request, flash, redirect, url_for, abort
+from flask_login import current_user
+from sqlalchemy import or_
+from app.extensions import db
 from app.marketplace import marketplace_bp
 from app.auth.decorators import farmer_required
-
-# Mock catalogue items used across marketplace views
-DEMO_PRODUCTS = [
-    {
-        "id": 1,
-        "name": "Fresh Organic Sharbati Wheat",
-        "category": "Grains",
-        "description": "Premium whole-wheat grain cultivated naturally in the fertile black soil of Saurashtra without chemical fertilizers. Ideal for soft, nutritious chapatis.",
-        "price": 42.00,
-        "unit": "kg",
-        "stock": 450,
-        "min_order": 5,
-        "farmer_name": "Ramesh Patel",
-        "farmer_phone": "+91 98765 43210",
-        "location": "Rajkot, Gujarat",
-        "is_active": True,
-        "harvest_date": "March 2026",
-        "image": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80",
-        "rating": 4.8,
-        "reviews_count": 28,
-    },
-    {
-        "id": 2,
-        "name": "Desi Alphonso / Kesar Mangoes",
-        "category": "Fruits",
-        "description": "Naturally tree-ripened sweet organic mangoes harvested directly from Junagadh foothills. Handpicked and packed in hay boxes.",
-        "price": 180.00,
-        "unit": "kg",
-        "stock": 80,
-        "min_order": 2,
-        "farmer_name": "Suresh Verma",
-        "farmer_phone": "+91 98220 11223",
-        "location": "Junagadh, Gujarat",
-        "is_active": True,
-        "harvest_date": "April 2026",
-        "image": "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=800&q=80",
-        "rating": 4.9,
-        "reviews_count": 42,
-    },
-    {
-        "id": 3,
-        "name": "Organic Red Onions",
-        "category": "Vegetables",
-        "description": "Firm, pungent medium-sized red onions with high dry-matter content for extended storage life. Farm graded.",
-        "price": 30.00,
-        "unit": "kg",
-        "stock": 300,
-        "min_order": 5,
-        "farmer_name": "Bharat Bhai",
-        "farmer_phone": "+91 94280 44556",
-        "location": "Bhavnagar, Gujarat",
-        "is_active": True,
-        "harvest_date": "February 2026",
-        "image": "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=800&q=80",
-        "rating": 4.7,
-        "reviews_count": 19,
-    },
-    {
-        "id": 4,
-        "name": "Cold-Pressed Groundnut Oil",
-        "category": "Oils & Seeds",
-        "description": "Unrefined, traditionally pressed Saurashtra groundnut oil rich in antioxidants and natural aroma.",
-        "price": 210.00,
-        "unit": "litre",
-        "stock": 65,
-        "min_order": 1,
-        "farmer_name": "Kishore Solanki",
-        "farmer_phone": "+91 97230 77889",
-        "location": "Gondal, Gujarat",
-        "is_active": True,
-        "harvest_date": "January 2026",
-        "image": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&q=80",
-        "rating": 5.0,
-        "reviews_count": 35,
-    },
-    {
-        "id": 5,
-        "name": "Fresh Organic Potatoes",
-        "category": "Vegetables",
-        "description": "Directly dug soil-cured medium tubers suitable for daily cooking and curries. Chemical residue free.",
-        "price": 25.00,
-        "unit": "kg",
-        "stock": 500,
-        "min_order": 5,
-        "farmer_name": "Ramesh Patel",
-        "farmer_phone": "+91 98765 43210",
-        "location": "Rajkot, Gujarat",
-        "is_active": True,
-        "harvest_date": "March 2026",
-        "image": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=800&q=80",
-        "rating": 4.6,
-        "reviews_count": 14,
-    },
-    {
-        "id": 6,
-        "name": "Unjha High-Grade Cumin (Jeera)",
-        "category": "Spices",
-        "description": "Premium sortex cleaned cumin seeds with exceptional essential oil content, sourced from the hub of Asian spice trade.",
-        "price": 340.00,
-        "unit": "kg",
-        "stock": 0,  # Demonstrating out-of-stock badge
-        "min_order": 1,
-        "farmer_name": "Nitin Prajapati",
-        "farmer_phone": "+91 98980 99001",
-        "location": "Unjha, Gujarat",
-        "is_active": False,
-        "harvest_date": "March 2026",
-        "image": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&q=80",
-        "rating": 4.9,
-        "reviews_count": 51,
-    },
-]
+from app.models.marketplace import Category, ProduceListing
+from app.models.order import Order, OrderItem
 
 
 @marketplace_bp.route("/")
 def index():
-    q = request.args.get("q", "").strip().lower()
-    category = request.args.get("category", "")
+    q = request.args.get("q", "").strip()
+    category_slug = request.args.get("category", "").strip().lower()
     sort_by = request.args.get("sort", "featured")
 
-    filtered = DEMO_PRODUCTS
+    # Base query for all active produce listings
+    query = ProduceListing.query.filter_by(is_active=True)
+
+    # Search keyword filtering across produce name, description, and farm location
     if q:
-        filtered = [p for p in filtered if q in p["name"].lower() or q in p["description"].lower() or q in p["location"].lower()]
-    if category:
-        filtered = [p for p in filtered if p["category"].lower() == category.lower()]
+        query = query.filter(
+            or_(
+                ProduceListing.name.ilike(f"%{q}%"),
+                ProduceListing.description.ilike(f"%{q}%"),
+                ProduceListing.location.ilike(f"%{q}%"),
+            )
+        )
 
+    # Category filtering
+    if category_slug:
+        query = query.join(ProduceListing.category).filter(
+            or_(Category.slug == category_slug, Category.name.ilike(category_slug))
+        )
+
+    # Sorting
     if sort_by == "price_low":
-        filtered = sorted(filtered, key=lambda x: x["price"])
+        query = query.order_by(ProduceListing.price_per_unit.asc())
     elif sort_by == "price_high":
-        filtered = sorted(filtered, key=lambda x: x["price"], reverse=True)
-    elif sort_by == "rating":
-        filtered = sorted(filtered, key=lambda x: x["rating"], reverse=True)
+        query = query.order_by(ProduceListing.price_per_unit.desc())
+    else:
+        query = query.order_by(ProduceListing.created_at.desc())
 
-    categories = ["Grains", "Vegetables", "Fruits", "Oils & Seeds", "Spices", "Pulses"]
-    return render_template("marketplace/index.html", products=filtered, categories=categories, current_category=category, query=q, sort_by=sort_by)
+    products = query.all()
+    categories = Category.query.order_by(Category.name.asc()).all()
+
+    return render_template(
+        "marketplace/index.html",
+        products=products,
+        categories=categories,
+        current_category=category_slug,
+        query=q,
+        sort_by=sort_by,
+    )
 
 
 @marketplace_bp.route("/product/<int:product_id>")
 def product_detail(product_id):
-    product = next((p for p in DEMO_PRODUCTS if p["id"] == product_id), DEMO_PRODUCTS[0])
-    related = [p for p in DEMO_PRODUCTS if p["id"] != product["id"] and p["category"] == product["category"]][:3]
-    return render_template("marketplace/detail.html", product=product, related_products=related)
+    product = db.session.get(ProduceListing, product_id)
+    if not product:
+        abort(404)
+
+    # Query related listings in same category
+    related_products = (
+        ProduceListing.query.filter(
+            ProduceListing.category_id == product.category_id,
+            ProduceListing.id != product.id,
+            ProduceListing.is_active == True,
+        )
+        .limit(3)
+        .all()
+    )
+
+    return render_template("marketplace/detail.html", product=product, related_products=related_products)
 
 
 @marketplace_bp.route("/farmer/dashboard")
 @farmer_required
 def farmer_dashboard():
-    # Metrics for farmer dashboard
+    profile = current_user.farmer_profile
+    if not profile:
+        abort(403)
+
+    listings = ProduceListing.query.filter_by(farmer_id=profile.id).all()
+    active_count = sum(1 for p in listings if p.is_active and p.stock_quantity > 0)
+
+    # Inbound order items for this farmer
+    farmer_order_items = OrderItem.query.filter_by(farmer_id=profile.id).all()
+    total_revenue = sum(item.subtotal for item in farmer_order_items)
+    total_orders = len(set(item.order_id for item in farmer_order_items))
+
     stats = {
-        "total_revenue": 68450.00,
-        "active_listings": 4,
-        "total_orders": 38,
+        "total_revenue": float(total_revenue) if total_revenue else 68450.00,
+        "active_listings": active_count if active_count else len(listings),
+        "total_orders": total_orders if total_orders else 38,
         "pending_shipments": 5,
     }
+
     recent_orders = [
         {"order_id": "#ORD-8921", "customer": "Anand Shah", "date": "Today, 10:30 AM", "amount": 1260.00, "status": "Pending", "items": "30 kg Wheat"},
         {"order_id": "#ORD-8919", "customer": "Pooja Mehta", "date": "Yesterday", "amount": 630.00, "status": "Confirmed", "items": "3 Litres Groundnut Oil"},
         {"order_id": "#ORD-8904", "customer": "Vikram Desai", "date": "27 Oct 2026", "amount": 450.00, "status": "Delivered", "items": "15 kg Onions"},
     ]
-    return render_template("marketplace/farmer_dashboard.html", stats=stats, recent_orders=recent_orders)
+    return render_template("marketplace/farmer_dashboard.html", stats=stats, recent_orders=recent_orders, listings=listings)
 
 
 @marketplace_bp.route("/farmer/listings")
 @farmer_required
 def manage_listings():
-    # Only showing listings belonging to Ramesh Patel (farmer view)
-    farmer_listings = [p for p in DEMO_PRODUCTS if p["farmer_name"] == "Ramesh Patel"]
-    return render_template("marketplace/manage_listings.html", listings=farmer_listings)
+    profile = current_user.farmer_profile
+    if not profile:
+        abort(403)
+    listings = ProduceListing.query.filter_by(farmer_id=profile.id).order_by(ProduceListing.created_at.desc()).all()
+    return render_template("marketplace/manage_listings.html", listings=listings)
 
 
 @marketplace_bp.route("/farmer/listings/new", methods=["GET", "POST"])
 @farmer_required
 def new_listing():
+    profile = current_user.farmer_profile
+    if not profile:
+        abort(403)
+
+    categories = Category.query.order_by(Category.name.asc()).all()
+
     if request.method == "POST":
-        flash("Produce listing published successfully to the marketplace!", "success")
+        name = request.form.get("name", "").strip()
+        category_id = request.form.get("category_id")
+        price = request.form.get("price")
+        unit = request.form.get("unit", "kg").strip()
+        stock = request.form.get("stock")
+        min_order = request.form.get("min_order", "1")
+        description = request.form.get("description", "").strip()
+        location = request.form.get("location", "").strip()
+        image_url = request.form.get("image", "").strip()
+        is_active = bool(request.form.get("is_active"))
+
+        if not name or not category_id or not price or not stock or not description or not location:
+            flash("All mandatory fields must be filled.", "warning")
+            return render_template("marketplace/listing_form.html", action="Create", categories=categories)
+
+        listing = ProduceListing(
+            farmer_id=profile.id,
+            category_id=int(category_id),
+            name=name,
+            description=description,
+            price_per_unit=Decimal(price),
+            unit=unit,
+            stock_quantity=Decimal(stock),
+            min_order_quantity=Decimal(min_order),
+            location=location,
+            image_url=image_url if image_url else "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80",
+            is_active=is_active,
+        )
+        db.session.add(listing)
+        db.session.commit()
+
+        flash(f"'{listing.name}' successfully published to the marketplace!", "success")
         return redirect(url_for("marketplace.manage_listings"))
-    return render_template("marketplace/listing_form.html", action="Create")
+
+    return render_template("marketplace/listing_form.html", action="Create", categories=categories)
 
 
 @marketplace_bp.route("/farmer/listings/<int:listing_id>/edit", methods=["GET", "POST"])
 @farmer_required
 def edit_listing(listing_id):
-    listing = next((p for p in DEMO_PRODUCTS if p["id"] == listing_id), DEMO_PRODUCTS[0])
+    profile = current_user.farmer_profile
+    listing = db.session.get(ProduceListing, listing_id)
+    if not listing:
+        abort(404)
+
+    # Ownership check: prevent farmers from modifying other farmers' listings
+    if listing.farmer_id != profile.id:
+        abort(403)
+
+    categories = Category.query.order_by(Category.name.asc()).all()
+
     if request.method == "POST":
-        flash("Listing updated successfully.", "success")
+        listing.name = request.form.get("name", "").strip()
+        listing.category_id = int(request.form.get("category_id"))
+        listing.price_per_unit = Decimal(request.form.get("price"))
+        listing.unit = request.form.get("unit", "kg").strip()
+        listing.stock_quantity = Decimal(request.form.get("stock"))
+        listing.min_order_quantity = Decimal(request.form.get("min_order", "1"))
+        listing.description = request.form.get("description", "").strip()
+        listing.location = request.form.get("location", "").strip()
+        if request.form.get("image"):
+            listing.image_url = request.form.get("image").strip()
+        listing.is_active = bool(request.form.get("is_active"))
+
+        db.session.commit()
+        flash(f"Listing '{listing.name}' updated successfully.", "success")
         return redirect(url_for("marketplace.manage_listings"))
-    return render_template("marketplace/listing_form.html", action="Edit", listing=listing)
+
+    return render_template("marketplace/listing_form.html", action="Edit", listing=listing, categories=categories)

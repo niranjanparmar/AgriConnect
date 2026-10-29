@@ -37,7 +37,7 @@
                 <select name="category" class="form-select" onchange="this.form.submit()">
                     <option value="">All Categories</option>
                     {% for cat in categories %}
-                    <option value="{{ cat }}" {% if current_category.lower() == cat.lower() %}selected{% endif %}>{{ cat }}</option>
+                    <option value="{{ cat.slug if cat.slug is defined else cat }}" {% if current_category and current_category|lower == (cat.slug if cat.slug is defined else cat)|lower %}selected{% endif %}>{{ cat.name if cat.name is defined else cat }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -63,7 +63,7 @@
             <div class="card card-agri h-100">
                 <div class="produce-img-wrap">
                     <img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">
-                    <span class="badge bg-dark bg-opacity-75 produce-badge">{{ p.category }}</span>
+                    <span class="badge bg-dark bg-opacity-75 produce-badge">{{ p.category.name if p.category.name is defined else p.category }}</span>
                     {% if p.stock > 0 %}
                     <span class="badge bg-success position-absolute top-0 end-0 m-2"><i class="bi bi-check2"></i> In Stock ({{ p.stock }} {{ p.unit }})</span>
                     {% else %}
