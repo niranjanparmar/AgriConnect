@@ -65,3 +65,7 @@ def create_app(config_name=None):
 
     return app
 
+
+# Expose default WSGI app instance for platforms executing 'gunicorn app:app'
+app = create_app()
+
