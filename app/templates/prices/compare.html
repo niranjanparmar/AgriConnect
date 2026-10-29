@@ -42,6 +42,7 @@
         </form>
     </div>
 
+    {% if records %}
     <!-- Comparative Chart Card -->
     <div class="card card-agri p-4 mb-4">
         <h5 class="fw-bold mb-3">Mandi Rate Spread for <strong>{{ selected_crop }}</strong></h5>
@@ -87,6 +88,16 @@
             </table>
         </div>
     </div>
+    {% else %}
+    <div class="card p-5 text-center border-0 shadow-sm rounded-4 bg-white">
+        <i class="bi bi-bar-chart display-4 text-muted mb-3"></i>
+        <h4>No Comparison Records Available</h4>
+        <p class="text-muted">No pricing data is currently recorded across APMC mandis for {{ selected_crop }}.</p>
+        <div>
+            <a href="{{ url_for('prices.index') }}" class="btn btn-agri px-4">Browse All Mandi Prices</a>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 

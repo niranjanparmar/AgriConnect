@@ -263,3 +263,31 @@ def seed():
 
     db.session.commit()
     click.echo("[OK] AgriConnect database successfully seeded!")
+
+
+@cli_bp.cli.command("sync-prices")
+@click.option("--source", default="auto", type=click.Choice(["auto", "demo", "live"]), help="Source of agricultural price data (auto, demo, live).")
+@click.option("--limit", default=50, type=int, help="Maximum number of records to ingest.")
+def sync_prices(source, limit):
+    """Synchronize APMC mandi commodity prices with duplicate validation and alert checks."""
+    from app.services.price_sync import PriceSyncService
+
+    click.echo(f"Initiating agricultural price sync (Source mode: {source}, Limit: {limit})...")
+    service = PriceSyncService()
+    results = service.sync(source=source, limit=limit)
+
+    click.echo(f"Sync Results:")
+    click.echo(f"  Source Attribution: {results['source']}")
+    click.echo(f"  Total Raw Processed: {results['total_raw']}")
+    click.echo(f"  [OK] New Records Created: {results['created']}")
+    click.echo(f"  [OK] Skipped Duplicates: {results['skipped_duplicates']}")
+    if results["invalid_records"] > 0:
+        click.echo(f"  [WARN] Invalid Records Skipped: {results['invalid_records']}")
+        for err in results["errors"][:5]:
+            click.echo(f"    - {err}")
+    if results["alerts_triggered"]:
+        click.echo(f"  [ALERT] Price Alerts Triggered: {len(results['alerts_triggered'])}")
+        for al in results["alerts_triggered"]:
+            click.echo(f"    - User {al['user_email']}: {al['crop']} at {al['market']} is ₹{al['modal_price']} ({al['condition']} ₹{al['target_price']})")
+    click.echo("[OK] Price synchronization completed successfully!")
+

@@ -1,7 +1,7 @@
 from decimal import Decimal
 from datetime import datetime, timezone
-from flask import render_template, request, flash, redirect, url_for
-from flask_login import current_user
+from flask import render_template, request, flash, redirect, url_for, abort
+from flask_login import current_user, login_required
 from sqlalchemy import func
 from app.extensions import db
 from app.prices import prices_bp
@@ -13,6 +13,7 @@ def index():
     crop_query = request.args.get("crop", "").strip()
     market_query = request.args.get("market", "").strip()
     state_query = request.args.get("state", "").strip()
+    date_query = request.args.get("date", "").strip()
 
     # Base query joined with Crop and Market models
     query = CropPriceRecord.query.join(CropPriceRecord.crop).join(CropPriceRecord.market)
@@ -23,6 +24,12 @@ def index():
         query = query.filter(Market.name.ilike(f"%{market_query}%"))
     if state_query:
         query = query.filter(Market.state.ilike(f"%{state_query}%"))
+    if date_query:
+        try:
+            parsed_date = datetime.strptime(date_query, "%Y-%m-%d").date()
+            query = query.filter(CropPriceRecord.arrival_date == parsed_date)
+        except ValueError:
+            pass
 
     records = query.order_by(CropPriceRecord.arrival_date.desc(), CropPriceRecord.id.desc()).all()
 
@@ -37,11 +44,13 @@ def index():
         highest_max = max(r.max_price for r in records)
         lowest_min = min(r.min_price for r in records)
         last_updated = f"{records[0].arrival_date.strftime('%d %b %Y')}, 05:00 PM IST"
+        source_label = records[0].source
     else:
         avg_modal = Decimal("0.00")
         highest_max = Decimal("0.00")
         lowest_min = Decimal("0.00")
         last_updated = "Live Sync Active"
+        source_label = "Agmarknet / Ministry of Agriculture & Farmers Welfare"
 
     return render_template(
         "prices/index.html",
@@ -52,11 +61,12 @@ def index():
         selected_crop=crop_query,
         selected_market=market_query,
         selected_state=state_query,
+        selected_date=date_query,
         avg_modal=avg_modal,
         highest_max=highest_max,
         lowest_min=lowest_min,
         last_updated=last_updated,
-        source_attribution="Agmarknet / Ministry of Agriculture & Farmers Welfare (Live Agmarknet Standardized Schema)",
+        source_attribution=source_label,
     )
 
 
@@ -160,3 +170,19 @@ def alerts():
         user_alerts = PriceAlert.query.filter_by(user_id=current_user.id).all()
 
     return render_template("prices/alerts.html", alerts=user_alerts, crops=crops, markets=markets)
+
+
+@prices_bp.route("/alerts/delete/<int:alert_id>", methods=["POST"])
+@login_required
+def delete_alert(alert_id):
+    alert = db.session.get(PriceAlert, alert_id)
+    if not alert or alert.user_id != current_user.id:
+        flash("Alert rule not found or unauthorized.", "danger")
+        return redirect(url_for("prices.alerts"))
+
+    crop_name = alert.crop.name if alert.crop else "Commodity"
+    db.session.delete(alert)
+    db.session.commit()
+    flash(f"Price alert rule for {crop_name} removed successfully.", "info")
+    return redirect(url_for("prices.alerts"))
+
