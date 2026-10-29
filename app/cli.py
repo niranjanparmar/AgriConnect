@@ -274,7 +274,17 @@ def sync_prices(source, limit):
 
     click.echo(f"Initiating agricultural price sync (Source mode: {source}, Limit: {limit})...")
     service = PriceSyncService()
-    results = service.sync(source=source, limit=limit)
+    try:
+        results = service.sync(source=source, limit=limit)
+    except Exception as e:
+        click.echo(f"  [ERROR] Live synchronization could not proceed: {e}")
+        click.echo("\n  [GUIDE] How to enable 100% Live Government of India Mandi Data:")
+        click.echo("    1. Sign up for a free developer account at: https://data.gov.in")
+        click.echo("    2. Navigate to 'My Account' -> 'API Key' to copy your key.")
+        click.echo("    3. Add it to your .env file: AGRI_PRICE_API_KEY=your_key_here")
+        click.echo("    4. Re-run: flask cli sync-prices --source live --limit 50")
+        click.echo("\n  Tip: You can use verified benchmark data anytime with: flask cli sync-prices --source demo\n")
+        return
 
     click.echo(f"Sync Results:")
     click.echo(f"  Source Attribution: {results['source']}")

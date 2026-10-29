@@ -389,3 +389,4 @@ AgriConnect demonstrates a working, full-stack software engineering solution to 
 3. **Flask Web Development:** Grinberg, M. (2018). *Developing Web Applications with Python*. O'Reilly Media.
 4. **SQLAlchemy 2.0 Documentation:** Bayer, M. (2024). *Object Relational Tutorial and Database Concurrency Control*.
 5. **Chart.js Documentation:** Downie, E. et al. (2024). *Open Source HTML5 Canvas Charting Library*.
+

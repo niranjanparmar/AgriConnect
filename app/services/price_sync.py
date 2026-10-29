@@ -21,7 +21,10 @@ class PriceSyncService:
     """
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None):
-        self.api_key = api_key or (current_app.config.get("AGRI_PRICE_API_KEY") if current_app else "")
+        if api_key is not None:
+            self.api_key = api_key
+        else:
+            self.api_key = current_app.config.get("AGRI_PRICE_API_KEY") if current_app else ""
         self.base_url = base_url or (current_app.config.get("AGRI_PRICE_API_URL") if current_app else "") or DEFAULT_DATA_GOV_IN_BASE_URL
 
     def parse_arrival_date(self, date_val: Any) -> Optional[date]:
@@ -105,7 +108,11 @@ class PriceSyncService:
             "format": "json",
             "limit": limit,
         }
-        resp = requests.get(self.base_url, params=params, timeout=10)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json",
+        }
+        resp = requests.get(self.base_url, params=params, headers=headers, timeout=15)
         resp.raise_for_status()
         data = resp.json()
         records = data.get("records", [])

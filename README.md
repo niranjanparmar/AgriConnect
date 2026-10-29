@@ -144,3 +144,4 @@ DATABASE_URL=postgresql://user:password@host:5432/agriconnect
 ## 📄 Academic Project Documentation
 
 The complete engineering report with ER Diagrams, Sequence Diagrams, Test Matrices, and Academic Literature Citations is available at [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md).
+
