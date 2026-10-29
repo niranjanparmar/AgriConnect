@@ -48,6 +48,7 @@ htmlcov/
 # Uploaded Files
 app/static/uploads/*
 !app/static/uploads/.gitkeep
+!app/static/uploads/**/.gitkeep
 
 # Operating System
 Thumbs.db

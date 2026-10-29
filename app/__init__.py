@@ -54,5 +54,14 @@ def create_app(config_name=None):
     if upload_folder:
         os.makedirs(upload_folder, exist_ok=True)
 
+    # Security Headers Hook
+    @app.after_request
+    def set_security_headers(response):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        return response
+
     return app
 

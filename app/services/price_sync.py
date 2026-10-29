@@ -294,3 +294,4 @@ class PriceSyncService:
                 records, source_label = self.get_verified_benchmark_records()
 
         return self.sync_records(records, source_label)
+

@@ -46,6 +46,7 @@
                                 <td>₹{{ "%.2f"|format(item.listing.price_per_unit) }} / {{ item.listing.unit }}</td>
                                 <td>
                                     <form method="POST" action="{{ url_for('orders.update_cart_item', item_id=item.id) }}" class="d-flex align-items-center gap-1">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button class="btn btn-sm btn-outline-secondary" type="submit" name="action" value="decrease">-</button>
                                         <span class="fw-semibold px-2">{{ item.quantity }}</span>
                                         <button class="btn btn-sm btn-outline-secondary" type="submit" name="action" value="increase">+</button>
@@ -55,6 +56,7 @@
                                 <td class="fw-bold text-success">₹{{ "%.2f"|format(item.subtotal) }}</td>
                                 <td>
                                     <form method="POST" action="{{ url_for('orders.remove_from_cart', item_id=item.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-sm text-danger border-0 bg-transparent" title="Remove Item"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </td>

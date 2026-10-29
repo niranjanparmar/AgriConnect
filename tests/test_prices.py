@@ -209,3 +209,4 @@ def test_price_alert_create_and_delete_lifecycle(consumer_client, consumer_user,
     with app.app_context():
         deleted = db.session.get(PriceAlert, alert_id)
         assert deleted is None
+

@@ -17,7 +17,9 @@
                     </a>
                 </div>
 
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">Produce Name / Variety</label>
                         <input type="text" name="name" class="form-control" placeholder="e.g. Organic Sharbati Wheat" value="{{ listing.name if listing else '' }}" required>
@@ -68,10 +70,51 @@
                             <label class="form-label fw-semibold small">Farm Dispatch Location</label>
                             <input type="text" name="location" class="form-control" placeholder="e.g. Gondal, Rajkot District" value="{{ listing.location if listing else 'Rajkot, Gujarat' }}" required>
                         </div>
+
+                        <!-- Produce Image: Local File Upload & Mobile Camera Access with URL fallback -->
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Produce Image (URL or File Upload)</label>
-                            <input type="text" name="image" class="form-control" placeholder="https://images.unsplash.com/..." value="{{ listing.image if listing else '' }}">
-                            <div class="form-text small">File upload will be supported in Phase 7 via secure local storage.</div>
+                            <label class="form-label fw-semibold small">Produce Image (Camera Snapshot or File Upload)</label>
+                            
+                            <div class="input-group mb-2">
+                                <input type="file" 
+                                       id="imageFileInput" 
+                                       name="image_file" 
+                                       class="form-control" 
+                                       accept="image/png, image/jpeg, image/jpg, image/webp" 
+                                       capture="environment"
+                                       onchange="previewUploadedImage(this)">
+                                <label class="input-group-text bg-success-subtle text-success fw-semibold" for="imageFileInput">
+                                    <i class="bi bi-camera-fill me-1"></i> Capture / Choose
+                                </label>
+                            </div>
+
+                            <div class="mb-2">
+                                <input type="url" 
+                                       id="imageUrlInput"
+                                       name="image" 
+                                       class="form-control form-control-sm" 
+                                       placeholder="Or paste image URL (https://...)" 
+                                       value="{{ listing.image if listing and not listing.image.startswith('/static/uploads/') else '' }}"
+                                       oninput="previewUrlImage(this.value)">
+                            </div>
+
+                            <!-- Image Preview Card -->
+                            <div id="imagePreviewContainer" class="p-2 border rounded-3 bg-light text-center {% if not (listing and listing.image) %}d-none{% endif %}">
+                                <img id="imagePreview" 
+                                     src="{{ listing.image if listing and listing.image else '#' }}" 
+                                     alt="Produce Preview" 
+                                     class="img-fluid rounded-2 shadow-sm" 
+                                     style="max-height: 140px; object-fit: cover;">
+                                <div class="small text-muted mt-1" id="previewFilename">
+                                    {% if listing and listing.image %}
+                                    Current Produce Photo
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="form-text small text-muted">
+                                <i class="bi bi-shield-check text-success me-1"></i> Supports live camera on mobile, file browser on desktop, or web URLs (PNG, JPG, WEBP &le; 5MB).
+                            </div>
                         </div>
                     </div>
 
@@ -91,3 +134,33 @@
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+function previewUploadedImage(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('imagePreview');
+            const container = document.getElementById('imagePreviewContainer');
+            const label = document.getElementById('previewFilename');
+            preview.src = e.target.result;
+            container.classList.remove('d-none');
+            label.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function previewUrlImage(url) {
+    if (url && url.trim().length > 7) {
+        const preview = document.getElementById('imagePreview');
+        const container = document.getElementById('imagePreviewContainer');
+        const label = document.getElementById('previewFilename');
+        preview.src = url.trim();
+        container.classList.remove('d-none');
+        label.textContent = 'Web Image URL';
+    }
+}
+</script>
+{% endblock %}

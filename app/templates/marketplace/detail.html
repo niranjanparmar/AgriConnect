@@ -57,6 +57,7 @@
 
                 <!-- Add to Cart Form -->
                 <form action="{{ url_for('orders.add_to_cart') }}" method="POST" class="mt-auto">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="listing_id" value="{{ product.id }}">
                     <div class="row g-2 align-items-center mb-3">
                         <div class="col-auto">

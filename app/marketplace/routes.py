@@ -1,12 +1,41 @@
+import os
+import uuid
+from pathlib import Path
 from decimal import Decimal
-from flask import render_template, request, flash, redirect, url_for, abort
+from flask import render_template, request, flash, redirect, url_for, abort, current_app, has_request_context
 from flask_login import current_user
+from werkzeug.utils import secure_filename
 from sqlalchemy import or_
 from app.extensions import db
 from app.marketplace import marketplace_bp
 from app.auth.decorators import farmer_required
 from app.models.marketplace import Category, ProduceListing
 from app.models.order import Order, OrderItem
+
+
+def save_listing_image(file_obj) -> str | None:
+    """Save an uploaded listing photo locally with path sanitization and collision resistance."""
+    if not file_obj or file_obj.filename == "":
+        return None
+
+    raw_name = secure_filename(file_obj.filename)
+    if not raw_name:
+        return None
+
+    ext = raw_name.rsplit(".", 1)[-1].lower() if "." in raw_name else ""
+    allowed = current_app.config.get("ALLOWED_EXTENSIONS", {"png", "jpg", "jpeg", "webp"})
+    if ext not in allowed:
+        if has_request_context():
+            flash(f"Unsupported file format '.{ext}'. Allowed formats: PNG, JPG, JPEG, WEBP.", "danger")
+        return None
+
+    unique_name = f"{uuid.uuid4().hex[:12]}_{raw_name}"
+    upload_dir = Path(current_app.root_path) / "static" / "uploads" / "listings"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    file_path = upload_dir / unique_name
+    file_obj.save(str(file_path))
+    return f"/static/uploads/listings/{unique_name}"
 
 
 @marketplace_bp.route("/")
@@ -136,6 +165,12 @@ def new_listing():
         image_url = request.form.get("image", "").strip()
         is_active = bool(request.form.get("is_active"))
 
+        # Process local file upload or camera photo capture
+        image_file = request.files.get("image_file")
+        uploaded_path = save_listing_image(image_file)
+        if uploaded_path:
+            image_url = uploaded_path
+
         if not name or not category_id or not price or not stock or not description or not location:
             flash("All mandatory fields must be filled.", "warning")
             return render_template("marketplace/listing_form.html", action="Create", categories=categories)
@@ -185,8 +220,15 @@ def edit_listing(listing_id):
         listing.min_order_quantity = Decimal(request.form.get("min_order", "1"))
         listing.description = request.form.get("description", "").strip()
         listing.location = request.form.get("location", "").strip()
-        if request.form.get("image"):
+
+        # Process local file upload or camera photo capture
+        image_file = request.files.get("image_file")
+        uploaded_path = save_listing_image(image_file)
+        if uploaded_path:
+            listing.image_url = uploaded_path
+        elif request.form.get("image", "").strip():
             listing.image_url = request.form.get("image").strip()
+
         listing.is_active = bool(request.form.get("is_active"))
 
         db.session.commit()

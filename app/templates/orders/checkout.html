@@ -15,6 +15,7 @@
     <h2 class="fw-bold text-success mb-4">Complete Your Order</h2>
 
     <form method="POST" action="{{ url_for('orders.checkout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="row g-4">
             <!-- Delivery Details Form -->
             <div class="col-lg-8">
