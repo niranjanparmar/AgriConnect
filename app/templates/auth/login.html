@@ -29,16 +29,6 @@
                     </li>
                 </ul>
 
-                <!-- Demo Credentials Quick Helper for Reviewer -->
-                <div class="alert alert-light border small py-2 mb-3">
-                    <strong>Demo Credentials:</strong><br>
-                    {% if role == 'farmer' %}
-                    <span class="text-muted">Farmer:</span> <code>farmer@agriconnect.org</code> / <code>FarmerPass123!</code>
-                    {% else %}
-                    <span class="text-muted">Consumer:</span> <code>consumer@agriconnect.org</code> / <code>ConsumerPass123!</code>
-                    {% endif %}
-                </div>
-
                 <form method="POST" action="{{ url_for('auth.login', role=role, next=request.args.get('next')) }}">
                     {{ form.hidden_tag() }}
 
@@ -46,7 +36,7 @@
                         <label class="form-label fw-semibold small">{{ form.email.label }}</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com", value="farmer@agriconnect.org" if role == 'farmer' else "consumer@agriconnect.org") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com") }}
                             {% if form.email.errors %}
                             <div class="invalid-feedback">
                                 {% for error in form.email.errors %}{{ error }}{% endfor %}

@@ -99,9 +99,9 @@
 <!-- Key Pillars / Dual-Module Explanation -->
 <div class="container py-5 my-4 border-top">
     <div class="text-center mb-5">
-        <span class="badge bg-warning-subtle text-dark px-3 py-2 rounded-pill fw-semibold mb-2">Academic Architecture</span>
-        <h2 class="fw-bold">How AgriConnect Empowers Agriculture</h2>
-        <p class="text-muted col-md-7 mx-auto">A seamless intersection of e-commerce logistics and agricultural open data analytics designed for the IPE project.</p>
+        <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold mb-2">Integrated Platform</span>
+        <h2 class="fw-bold">How AgriConnect Empowers Indian Agriculture</h2>
+        <p class="text-muted col-md-7 mx-auto">A unified agricultural ecosystem uniting direct farm-to-door commerce with real-time wholesale mandi analytics.</p>
     </div>
 
     <div class="row g-4">
@@ -112,18 +112,18 @@
                         <i class="bi bi-basket3"></i>
                     </div>
                     <div>
-                        <h4 class="fw-bold mb-1">Module A: Farmer Marketplace</h4>
-                        <span class="text-muted small">Direct producer-to-consumer e-commerce</span>
+                        <h4 class="fw-bold mb-1">Direct Farmer Marketplace</h4>
+                        <span class="text-muted small">Farmer-to-consumer e-commerce without middleman margins</span>
                     </div>
                 </div>
                 <ul class="list-unstyled text-muted small mb-4">
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Dedicated farmer listings with live inventory management.</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Atomic stock decrementing using database transactions.</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Safe Cash-on-Delivery / Demo checkout workflow.</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Real-time status lifecycle: Pending &rarr; Confirmed &rarr; Shipped &rarr; Delivered.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Verified farmer harvest listings with direct mobile photo capture.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Real-time stock validation and atomic database transaction control.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Doorstep Cash-on-Delivery & contactless UPI order fulfillment.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Transparent order timeline: Confirmed &rarr; Dispatched &rarr; Delivered.</li>
                 </ul>
                 <div class="mt-auto">
-                    <a href="{{ url_for('marketplace.index') }}" class="btn btn-agri-outline w-100">Access Marketplace</a>
+                    <a href="{{ url_for('marketplace.index') }}" class="btn btn-agri-outline w-100">Browse Direct Marketplace</a>
                 </div>
             </div>
         </div>
@@ -135,18 +135,18 @@
                         <i class="bi bi-graph-up"></i>
                     </div>
                     <div>
-                        <h4 class="fw-bold mb-1">Module B: Crop Price Tracker</h4>
-                        <span class="text-muted small">APMC Mandi commodity price intelligence</span>
+                        <h4 class="fw-bold mb-1">APMC Mandi Price Intelligence</h4>
+                        <span class="text-muted small">Live daily government auction data & predictive trends</span>
                     </div>
                 </div>
                 <ul class="list-unstyled text-muted small mb-4">
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Live & historical Minimum, Maximum, and Modal mandi prices.</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Market-to-market comparison with comparative charts.</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Historical price trend analysis rendered via Chart.js.</li>
-                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Idempotent import pipeline with full source attribution.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Real-time Floor, Ceiling, and Modal rates from Ministry of Agriculture.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Inter-mandi comparison charts to identify regional price premiums.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> AI-powered 7-day price forecasting with risk confidence intervals.</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Automated SMS/Web rate threshold notifications for farmers.</li>
                 </ul>
                 <div class="mt-auto">
-                    <a href="{{ url_for('prices.index') }}" class="btn btn-outline-primary w-100">Access Price Intelligence</a>
+                    <a href="{{ url_for('prices.index') }}" class="btn btn-outline-primary w-100">Explore Mandi Prices</a>
                 </div>
             </div>
         </div>

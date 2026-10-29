@@ -60,3 +60,4 @@ def test_price_prediction_view_with_unknown_crop_handles_gracefully(client, app)
     assert response.status_code == 200
     assert b"Pan-India Market Price Prediction" in response.data
     assert b"predictionChart" in response.data
+

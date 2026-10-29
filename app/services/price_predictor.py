@@ -246,3 +246,4 @@ class PricePredictorService:
         # Sort states by highest predicted price (best selling opportunities)
         state_predictions.sort(key=lambda x: x["predicted_modal_7d"], reverse=True)
         return state_predictions
+
