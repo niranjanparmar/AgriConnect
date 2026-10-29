@@ -7,6 +7,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: FLASK_APP
+        value: run.py
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY

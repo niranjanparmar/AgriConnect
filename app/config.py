@@ -14,8 +14,11 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or "agriconnect-insecure-dev-fallback-key-change-me"
     
     # Database Configuration:
-    # Use DATABASE_URL if set. In local dev, if PostgreSQL is not active, can fallback to SQLite.
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or f"sqlite:///{BASE_DIR / 'agriconnect.db'}"
+    # Render and Heroku provide postgres:// which SQLAlchemy 1.4+ requires as postgresql://
+    _db_url = os.environ.get("DATABASE_URL")
+    if _db_url and _db_url.startswith("postgres://"):
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = _db_url or f"sqlite:///{BASE_DIR / 'agriconnect.db'}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Security & Upload settings
