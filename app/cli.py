@@ -11,8 +11,7 @@ from app.models.price import Crop, Market, CropPriceRecord, PriceAlert
 cli_bp = Blueprint("cli", __name__)
 
 
-@cli_bp.cli.command("seed")
-def seed():
+def seed_database():
     """Seed database with realistic initial categories, demo users, produce listings, and APMC rates."""
     click.echo("Seeding AgriConnect database...")
 
@@ -263,6 +262,12 @@ def seed():
 
     db.session.commit()
     click.echo("[OK] AgriConnect database successfully seeded!")
+
+
+@cli_bp.cli.command("seed")
+def seed():
+    """Seed database with realistic initial categories, demo users, produce listings, and APMC rates."""
+    seed_database()
 
 
 @cli_bp.cli.command("sync-prices")

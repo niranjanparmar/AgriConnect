@@ -63,6 +63,18 @@ def create_app(config_name=None):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         return response
 
+    # Ensure database tables and initial categories/products exist on boot
+    if not app.config.get("TESTING"):
+        with app.app_context():
+            try:
+                db.create_all()
+                from app.models.marketplace import Category
+                if not Category.query.first():
+                    from app.cli import seed_database
+                    seed_database()
+            except Exception as e:
+                app.logger.warning(f"Database auto-init notice: {e}")
+
     return app
 
 
