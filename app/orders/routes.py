@@ -1,5 +1,7 @@
 from flask import render_template, request, flash, redirect, url_for
+from flask_login import login_required
 from app.orders import orders_bp
+from app.auth.decorators import consumer_required, farmer_required
 
 # Demo cart items for Phase 3 UI walkthrough
 DEMO_CART = [
@@ -86,6 +88,7 @@ def checkout():
 
 
 @orders_bp.route("/consumer/dashboard")
+@consumer_required
 def consumer_dashboard():
     stats = {
         "active_orders": 1,
@@ -96,17 +99,20 @@ def consumer_dashboard():
 
 
 @orders_bp.route("/history")
+@consumer_required
 def order_history():
     return render_template("orders/order_history.html", orders=DEMO_ORDERS)
 
 
 @orders_bp.route("/order/<int:order_id>")
+@login_required
 def order_detail(order_id):
     order = next((o for o in DEMO_ORDERS if o["id"] == order_id), DEMO_ORDERS[0])
     return render_template("orders/order_detail.html", order=order)
 
 
 @orders_bp.route("/farmer/orders", methods=["GET", "POST"])
+@farmer_required
 def farmer_orders():
     if request.method == "POST":
         order_id = request.form.get("order_id")

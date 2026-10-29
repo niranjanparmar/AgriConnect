@@ -82,3 +82,4 @@ class OrderItem(db.Model):
 
     def __repr__(self) -> str:
         return f"<OrderItem #{self.id} {self.produce_name} x {self.quantity} = ₹{self.subtotal}>"
+

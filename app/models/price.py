@@ -100,3 +100,4 @@ class PriceAlert(db.Model):
 
     def __repr__(self) -> str:
         return f"<PriceAlert User:{self.user_id} Crop:{self.crop_id} {self.condition} ₹{self.target_price}>"
+

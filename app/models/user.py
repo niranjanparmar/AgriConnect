@@ -71,3 +71,4 @@ class FarmerProfile(db.Model):
 
     def __repr__(self) -> str:
         return f"<FarmerProfile {self.farm_name or self.user.full_name} ({self.district}, {self.state})>"
+

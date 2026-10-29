@@ -1,5 +1,6 @@
 from flask import render_template, request, flash, redirect, url_for
 from app.marketplace import marketplace_bp
+from app.auth.decorators import farmer_required
 
 # Mock catalogue items used across marketplace views
 DEMO_PRODUCTS = [
@@ -145,6 +146,7 @@ def product_detail(product_id):
 
 
 @marketplace_bp.route("/farmer/dashboard")
+@farmer_required
 def farmer_dashboard():
     # Metrics for farmer dashboard
     stats = {
@@ -162,6 +164,7 @@ def farmer_dashboard():
 
 
 @marketplace_bp.route("/farmer/listings")
+@farmer_required
 def manage_listings():
     # Only showing listings belonging to Ramesh Patel (farmer view)
     farmer_listings = [p for p in DEMO_PRODUCTS if p["farmer_name"] == "Ramesh Patel"]
@@ -169,6 +172,7 @@ def manage_listings():
 
 
 @marketplace_bp.route("/farmer/listings/new", methods=["GET", "POST"])
+@farmer_required
 def new_listing():
     if request.method == "POST":
         flash("Produce listing published successfully to the marketplace!", "success")
@@ -177,6 +181,7 @@ def new_listing():
 
 
 @marketplace_bp.route("/farmer/listings/<int:listing_id>/edit", methods=["GET", "POST"])
+@farmer_required
 def edit_listing(listing_id):
     listing = next((p for p in DEMO_PRODUCTS if p["id"] == listing_id), DEMO_PRODUCTS[0])
     if request.method == "POST":

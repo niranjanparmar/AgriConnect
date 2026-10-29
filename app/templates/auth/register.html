@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
+        <div class="col-md-9 col-lg-7">
             <div class="card card-agri border-0 shadow p-4 p-md-5">
                 <div class="text-center mb-4">
                     <div class="display-6 text-success mb-2">
@@ -15,87 +15,114 @@
                     <p class="text-muted small">Join India's premier transparent agricultural network</p>
                 </div>
 
-                <form method="POST" action="{{ url_for('auth.register') }}">
+                <form method="POST" action="{{ url_for('auth.register', role=role) }}">
+                    {{ form.hidden_tag() }}
+
                     <!-- Account Role Selection -->
-                    <label class="form-label fw-semibold small">Choose Account Type</label>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <input type="radio" class="btn-check" name="role" id="roleFarmer" value="farmer" checked autocomplete="off">
-                            <label class="btn btn-outline-success w-100 p-2 text-start" for="roleFarmer">
-                                <div class="fw-bold"><i class="bi bi-flower1 me-1"></i> Farmer</div>
-                                <div class="small text-muted" style="font-size: 0.75rem;">Sell harvest & track market rates</div>
-                            </label>
-                        </div>
-                        <div class="col-6">
-                            <input type="radio" class="btn-check" name="role" id="roleConsumer" value="consumer" autocomplete="off">
-                            <label class="btn btn-outline-success w-100 p-2 text-start" for="roleConsumer">
-                                <div class="fw-bold"><i class="bi bi-cart3 me-1"></i> Consumer</div>
-                                <div class="small text-muted" style="font-size: 0.75rem;">Order fresh farm products directly</div>
-                            </label>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">{{ form.role.label }}</label>
+                        {{ form.role(class="form-select", id="accountRoleSelect", onchange="toggleFarmFields(this.value)") }}
                     </div>
 
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Full Name</label>
-                            <input type="text" name="full_name" class="form-control" placeholder="Ramesh Patel" required>
+                            <label class="form-label fw-semibold small">{{ form.full_name.label }}</label>
+                            {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else ""), placeholder="Ramesh Patel") }}
+                            {% if form.full_name.errors %}
+                            <div class="invalid-feedback">{% for e in form.full_name.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Phone Number</label>
-                            <input type="tel" name="phone" class="form-control" placeholder="+91 98765 43210" required>
+                            <label class="form-label fw-semibold small">{{ form.phone.label }}</label>
+                            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="+91 98765 43210") }}
+                            {% if form.phone.errors %}
+                            <div class="invalid-feedback">{% for e in form.phone.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Email Address</label>
-                        <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+                        <label class="form-label fw-semibold small">{{ form.email.label }}</label>
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com") }}
+                        {% if form.email.errors %}
+                        <div class="invalid-feedback">{% for e in form.email.errors %}{{ e }}{% endfor %}</div>
+                        {% endif %}
                     </div>
 
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold small">State</label>
-                            <select name="state" class="form-select" required>
-                                <option value="Gujarat" selected>Gujarat</option>
-                                <option value="Maharashtra">Maharashtra</option>
-                                <option value="Punjab">Punjab</option>
-                                <option value="Rajasthan">Rajasthan</option>
-                                <option value="Madhya Pradesh">Madhya Pradesh</option>
-                            </select>
+                            <label class="form-label fw-semibold small">{{ form.state.label }}</label>
+                            {{ form.state(class="form-select") }}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold small">District / City</label>
-                            <input type="text" name="district" class="form-control" placeholder="Rajkot" required>
+                            <label class="form-label fw-semibold small">{{ form.district.label }}</label>
+                            {{ form.district(class="form-control" + (" is-invalid" if form.district.errors else ""), placeholder="Rajkot") }}
+                            {% if form.district.errors %}
+                            <div class="invalid-feedback">{% for e in form.district.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Farmer-specific Fields -->
+                    <div id="farmerFieldsBlock" class="p-3 bg-light rounded-3 mb-3 border">
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold small">{{ form.farm_name.label }}</label>
+                            {{ form.farm_name(class="form-control", placeholder="e.g. Patel Organic Orchards") }}
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold small">{{ form.address.label }}</label>
+                                {{ form.address(class="form-control", rows="2", placeholder="Village / Mandi Yard / Dispatch Address") }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">{{ form.pincode.label }}</label>
+                                {{ form.pincode(class="form-control", placeholder="360004") }}
+                            </div>
                         </div>
                     </div>
 
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Password</label>
-                            <input type="password" name="password" class="form-control" placeholder="Minimum 8 characters" required>
+                            <label class="form-label fw-semibold small">{{ form.password.label }}</label>
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Min 8 characters") }}
+                            {% if form.password.errors %}
+                            <div class="invalid-feedback">{% for e in form.password.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Confirm Password</label>
-                            <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter password" required>
+                            <label class="form-label fw-semibold small">{{ form.confirm_password.label }}</label>
+                            {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), placeholder="Re-enter password") }}
+                            {% if form.confirm_password.errors %}
+                            <div class="invalid-feedback">{% for e in form.confirm_password.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
                         </div>
-                    </div>
-
-                    <div class="mb-4 form-check">
-                        <input type="checkbox" class="form-check-input" id="termsCheck" required checked>
-                        <label class="form-check-label small" for="termsCheck">
-                            I agree to the <a href="{{ url_for('main.about') }}" class="text-success text-decoration-none">Terms of Service</a> & Direct Agri-Trade Guidelines.
-                        </label>
                     </div>
 
                     <button type="submit" class="btn btn-agri w-100 py-2 fw-semibold mb-3">
-                        <i class="bi bi-person-check-fill me-1"></i> Complete Registration
+                        <i class="bi bi-person-check-fill me-1"></i> Register Account
                     </button>
 
                     <div class="text-center small text-muted">
-                        Already have an account? <a href="{{ url_for('auth.login') }}" class="fw-semibold text-success text-decoration-none">Log in here</a>
+                        Already have an account? <a href="{{ url_for('auth.login', role=role) }}" class="fw-semibold text-success text-decoration-none">Log in here</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function toggleFarmFields(role) {
+    const block = document.getElementById("farmerFieldsBlock");
+    if (block) {
+        block.style.display = (role === "farmer") ? "block" : "none";
+    }
+}
+document.addEventListener("DOMContentLoaded", function() {
+    const sel = document.getElementById("accountRoleSelect");
+    if (sel) {
+        toggleFarmFields(sel.value);
+    }
+});
+</script>
 {% endblock %}

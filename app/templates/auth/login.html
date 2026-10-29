@@ -15,43 +15,65 @@
                     <p class="text-muted small">Select your role to access your personalized portal</p>
                 </div>
 
-                <!-- Role Selector Tabs -->
-                <ul class="nav nav-pills nav-fill mb-4 bg-light p-1 rounded-pill" id="loginRoleTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-pill {% if role == 'farmer' %}active{% endif %}" id="farmer-tab" data-bs-toggle="pill" data-bs-target="#farmer-login" type="button" role="tab">
-                            <i class="bi bi-person-fill-gear me-1"></i> Farmer
-                        </button>
+                <!-- Role Selector Quick Switchers -->
+                <ul class="nav nav-pills nav-fill mb-4 bg-light p-1 rounded-pill" id="loginRoleTabs">
+                    <li class="nav-item">
+                        <a class="nav-link rounded-pill {% if role == 'farmer' %}active{% endif %}" href="{{ url_for('auth.login', role='farmer') }}">
+                            <i class="bi bi-flower1 me-1"></i> Farmer
+                        </a>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-pill {% if role != 'farmer' %}active{% endif %}" id="consumer-tab" data-bs-toggle="pill" data-bs-target="#consumer-login" type="button" role="tab">
-                            <i class="bi bi-bag-check-fill me-1"></i> Consumer
-                        </button>
+                    <li class="nav-item">
+                        <a class="nav-link rounded-pill {% if role != 'farmer' %}active{% endif %}" href="{{ url_for('auth.login', role='consumer') }}">
+                            <i class="bi bi-cart3 me-1"></i> Consumer
+                        </a>
                     </li>
                 </ul>
 
-                <form method="POST" action="{{ url_for('auth.login') }}">
+                <!-- Demo Credentials Quick Helper for Reviewer -->
+                <div class="alert alert-light border small py-2 mb-3">
+                    <strong>Demo Credentials:</strong><br>
+                    {% if role == 'farmer' %}
+                    <span class="text-muted">Farmer:</span> <code>farmer@agriconnect.org</code> / <code>FarmerPass123!</code>
+                    {% else %}
+                    <span class="text-muted">Consumer:</span> <code>consumer@agriconnect.org</code> / <code>ConsumerPass123!</code>
+                    {% endif %}
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.login', role=role, next=request.args.get('next')) }}">
+                    {{ form.hidden_tag() }}
+
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Email Address</label>
+                        <label class="form-label fw-semibold small">{{ form.email.label }}</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                            <input type="email" name="email" class="form-control" placeholder="name@example.com" value="demo.farmer@agriconnect.local" required>
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com", value="farmer@agriconnect.org" if role == 'farmer' else "consumer@agriconnect.org") }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center">
-                            <label class="form-label fw-semibold small mb-0">Password</label>
+                            <label class="form-label fw-semibold small mb-0">{{ form.password.label }}</label>
                             <a href="#" class="small text-decoration-none">Forgot password?</a>
                         </div>
                         <div class="input-group mt-1">
                             <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
-                            <input type="password" name="password" class="form-control" placeholder="••••••••" value="password123" required>
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••", value="FarmerPass123!" if role == 'farmer' else "ConsumerPass123!") }}
+                            {% if form.password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.password.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="rememberMe">
-                        <label class="form-check-label small" for="rememberMe">Remember my login on this device</label>
+                        {{ form.remember_me(class="form-check-input", id="rememberMe") }}
+                        <label class="form-check-label small" for="rememberMe">{{ form.remember_me.label.text }}</label>
                     </div>
 
                     <button type="submit" class="btn btn-agri w-100 py-2 fw-semibold mb-3">
@@ -59,7 +81,7 @@
                     </button>
 
                     <div class="text-center small text-muted">
-                        Don't have an account? <a href="{{ url_for('auth.register') }}" class="fw-semibold text-success text-decoration-none">Register here</a>
+                        Don't have an account? <a href="{{ url_for('auth.register', role=role) }}" class="fw-semibold text-success text-decoration-none">Register here</a>
                     </div>
                 </form>
             </div>

@@ -82,3 +82,4 @@ class CartItem(db.Model):
 
     def __repr__(self) -> str:
         return f"<CartItem User:{self.user_id} Listing:{self.listing_id} Qty:{self.quantity}>"
+

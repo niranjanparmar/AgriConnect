@@ -34,13 +34,20 @@ class DevelopmentConfig(Config):
     TESTING = False
 
 
+from sqlalchemy.pool import StaticPool
+
+
 class TestingConfig(Config):
-    """Testing environment configuration with isolated in-memory or test database."""
+    """Testing environment configuration with isolated in-memory test database."""
     DEBUG = False
     TESTING = True
     WTF_CSRF_ENABLED = False
-    # Use an isolated SQLite in-memory database during automated test execution
+    # Use StaticPool so SQLite in-memory persists across test requests
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "poolclass": StaticPool,
+        "connect_args": {"check_same_thread": False},
+    }
 
 
 class ProductionConfig(Config):

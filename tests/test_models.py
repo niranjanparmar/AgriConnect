@@ -215,3 +215,4 @@ def test_crop_price_record_idempotency_and_hash(app):
     with pytest.raises(IntegrityError):
         db.session.commit()
     db.session.rollback()
+

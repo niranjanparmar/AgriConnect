@@ -38,10 +38,10 @@ def seed():
 
     # 2. Demo Users
     # Farmer User
-    farmer_user = User.query.filter_by(email="farmer@agriconnect.local").first()
+    farmer_user = User.query.filter_by(email="farmer@agriconnect.org").first()
     if not farmer_user:
         farmer_user = User(
-            email="farmer@agriconnect.local",
+            email="farmer@agriconnect.org",
             full_name="Ramesh Patel",
             phone="+91 98765 43210",
             role="farmer",
@@ -65,13 +65,13 @@ def seed():
         db.session.flush()
     else:
         farmer_profile = farmer_user.farmer_profile
-    click.echo("  [OK] Processed demo Farmer user (farmer@agriconnect.local / FarmerPass123!)")
+    click.echo("  [OK] Processed demo Farmer user (farmer@agriconnect.org / FarmerPass123!)")
 
     # Consumer User
-    consumer_user = User.query.filter_by(email="consumer@agriconnect.local").first()
+    consumer_user = User.query.filter_by(email="consumer@agriconnect.org").first()
     if not consumer_user:
         consumer_user = User(
-            email="consumer@agriconnect.local",
+            email="consumer@agriconnect.org",
             full_name="Anand Shah",
             phone="+91 98250 12345",
             role="consumer",
@@ -80,7 +80,7 @@ def seed():
         consumer_user.set_password("ConsumerPass123!")
         db.session.add(consumer_user)
         db.session.flush()
-    click.echo("  [OK] Processed demo Consumer user (consumer@agriconnect.local / ConsumerPass123!)")
+    click.echo("  [OK] Processed demo Consumer user (consumer@agriconnect.org / ConsumerPass123!)")
 
     # 3. Produce Listings
     listings_data = [
