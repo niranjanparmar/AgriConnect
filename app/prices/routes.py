@@ -186,3 +186,38 @@ def delete_alert(alert_id):
     flash(f"Price alert rule for {crop_name} removed successfully.", "info")
     return redirect(url_for("prices.alerts"))
 
+
+@prices_bp.route("/predict")
+def predict():
+    """Pan-India Agricultural Commodity Price Forecasting and Arbitrage Analytics."""
+    from app.services.price_predictor import PricePredictorService
+
+    crops = [c.name for c in Crop.query.order_by(Crop.name.asc()).all()]
+    all_states = sorted(list(set(m.state for m in Market.query.all())))
+
+    selected_crop = request.args.get("crop", "").strip()
+    selected_state = request.args.get("state", "All India").strip()
+    days_ahead = request.args.get("days", 7, type=int)
+
+    if not selected_crop and crops:
+        selected_crop = crops[0]
+
+    predictor = PricePredictorService()
+    forecast_data = predictor.forecast_crop_price(
+        crop_name=selected_crop,
+        state=selected_state,
+        days_ahead=days_ahead,
+    )
+    state_predictions = predictor.get_all_india_state_predictions(crop_name=selected_crop)
+
+    return render_template(
+        "prices/predict.html",
+        crops=crops,
+        states=all_states,
+        selected_crop=selected_crop,
+        selected_state=selected_state,
+        forecast=forecast_data,
+        state_predictions=state_predictions,
+    )
+
+

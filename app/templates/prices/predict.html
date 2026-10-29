@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Pan-India Market Price Prediction - AgriConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb & Header -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('prices.index') }}" class="text-decoration-none text-muted">Price Tracker</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Price Prediction</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <span class="badge bg-success-subtle text-success px-3 py-1 mb-1">
+                <i class="bi bi-cpu-fill me-1"></i> AI & Time-Series Mandi Intelligence
+            </span>
+            <h2 class="fw-bold mb-0">Pan-India Market Price Prediction</h2>
+            <p class="text-muted small mb-0">Forecast upcoming APMC mandi price curves, volatility bands, and inter-state selling opportunities.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('prices.compare') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left-right me-1"></i> Compare Mandis
+            </a>
+            <a href="{{ url_for('prices.alerts') }}" class="btn btn-agri btn-sm">
+                <i class="bi bi-bell me-1"></i> Setup Rate Alert
+            </a>
+        </div>
+    </div>
+
+    <!-- Commodity & Region Selector Card -->
+    <div class="card card-agri p-3 mb-4">
+        <form method="GET" action="{{ url_for('prices.predict') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold mb-1">Select Agricultural Commodity:</label>
+                <select name="crop" class="form-select" onchange="this.form.submit()">
+                    {% for c in crops %}
+                    <option value="{{ c }}" {% if selected_crop.lower() == c.lower() %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold mb-1">Geographic Region:</label>
+                <select name="state" class="form-select" onchange="this.form.submit()">
+                    <option value="All India" {% if selected_state.lower() == 'all india' %}selected{% endif %}>All-India National Average</option>
+                    {% for s in states %}
+                    <option value="{{ s }}" {% if selected_state.lower() == s.lower() %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-agri w-100" style="margin-top: 24px;">
+                    <i class="bi bi-arrow-repeat me-1"></i> Update Prediction
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Forecast Metrics Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="rate-box modal-rate shadow-sm h-100 p-3">
+                <div class="small fw-semibold text-uppercase text-muted">Current Modal Price</div>
+                <div class="fs-2 fw-bold text-dark">₹{{ "{:,.2f}".format(forecast.current_price) }}</div>
+                <div class="small text-muted">Per Quintal (100 kg)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="rate-box shadow-sm h-100 p-3 border-start border-4 border-success bg-white rounded-3">
+                <div class="small fw-semibold text-uppercase text-muted">7-Day Projected Rate</div>
+                <div class="fs-2 fw-bold text-success">₹{{ "{:,.2f}".format(forecast.predicted_price_7d) }}</div>
+                <div class="small text-muted">Estimated wholesale auction</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="rate-box shadow-sm h-100 p-3 border-start border-4 border-{{ forecast.trend_badge }} bg-white rounded-3">
+                <div class="small fw-semibold text-uppercase text-muted">Expected Price Movement</div>
+                <div class="fs-2 fw-bold text-{{ forecast.trend_badge }}">
+                    {% if forecast.expected_change_pct > 0 %}+{% endif %}{{ forecast.expected_change_pct }}%
+                </div>
+                <div class="small">
+                    <span class="badge bg-{{ forecast.trend_badge }}-subtle text-{{ forecast.trend_badge }} px-2 py-1">
+                        <i class="bi {{ forecast.trend_icon }} me-1"></i> {{ forecast.trend }} Trajectory
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="rate-box shadow-sm h-100 p-3 border-start border-4 border-secondary bg-white rounded-3">
+                <div class="small fw-semibold text-uppercase text-muted">Market Volatility Index</div>
+                <div class="fs-2 fw-bold text-secondary">±₹{{ "{:,.2f}".format(forecast.volatility_index) }}</div>
+                <div class="small text-muted">Standard price variance (Quintal)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Market Recommendation Alert -->
+    <div class="alert alert-{{ forecast.trend_badge }} border-0 shadow-sm d-flex align-items-center gap-3 p-3 rounded-4 mb-4" role="alert">
+        <i class="bi bi-lightbulb-fill fs-2"></i>
+        <div>
+            <div class="fw-bold">AI Strategic Marketing Advice for {{ selected_crop }} ({{ selected_state }})</div>
+            <div class="small">{{ forecast.recommendation }}</div>
+        </div>
+    </div>
+
+    <!-- Interactive Price Forecast Chart (Chart.js) -->
+    <div class="card card-agri p-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-graph-up text-success me-2"></i> 
+                Historical Trend & Next 7-Day Forecast: <strong>{{ selected_crop }}</strong>
+            </h5>
+            <span class="badge bg-light text-dark border">Confidence Interval: 85% Volatility Band</span>
+        </div>
+        <div style="height: 380px;">
+            <canvas id="predictionChart"></canvas>
+        </div>
+        <div class="d-flex justify-content-center gap-4 flex-wrap mt-3 small text-muted">
+            <span><span class="badge rounded-circle bg-success me-1">&nbsp;</span> Actual Recorded Prices</span>
+            <span><span class="badge rounded-circle bg-warning me-1">&nbsp;</span> Predicted Modal Price Curve</span>
+            <span><span class="badge rounded-circle bg-secondary-subtle border me-1">&nbsp;</span> Upper/Lower Risk Boundary</span>
+        </div>
+    </div>
+
+    <!-- Pan-India Comparative State Predictions Table -->
+    <div class="card card-agri overflow-hidden border-0 shadow-sm mb-4">
+        <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h5 class="fw-bold mb-0">Pan-India State-by-State Price Forecasts for <strong>{{ selected_crop }}</strong></h5>
+                <small class="text-muted">Compare projected prices across Indian agricultural states to identify regional market arbitrage.</small>
+            </div>
+            <span class="badge bg-primary-subtle text-primary">{{ state_predictions|length }} States Monitored</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Indian State</th>
+                        <th>Mandis Monitored</th>
+                        <th>Current Modal (₹)</th>
+                        <th>7-Day Predicted Modal (₹)</th>
+                        <th>Projected Shift</th>
+                        <th>Expected Range (Floor &ndash; Ceiling)</th>
+                        <th>Action Guidance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sp in state_predictions %}
+                    <tr>
+                        <td class="fw-bold text-dark">
+                            <i class="bi bi-geo-alt-fill text-success me-1"></i> {{ sp.state }}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ sp.mandi_count }} APMCs</span></td>
+                        <td class="fw-semibold">₹{{ "{:,.2f}".format(sp.current_modal) }}</td>
+                        <td class="fw-bold text-success fs-6">₹{{ "{:,.2f}".format(sp.predicted_modal_7d) }}</td>
+                        <td>
+                            <span class="badge bg-{{ sp.badge }}-subtle text-{{ sp.badge }}">
+                                {% if sp.change_pct > 0 %}+{% endif %}{{ sp.change_pct }}%
+                            </span>
+                        </td>
+                        <td class="small text-muted">
+                            ₹{{ "{:,.2f}".format(sp.min_floor) }} &ndash; ₹{{ "{:,.2f}".format(sp.max_ceiling) }}
+                        </td>
+                        <td>
+                            {% if sp.change_pct >= 1.5 %}
+                            <span class="badge bg-success"><i class="bi bi-graph-up-arrow me-1"></i> Premium Market</span>
+                            {% elif sp.change_pct <= -1.5 %}
+                            <span class="badge bg-danger-subtle text-danger"><i class="bi bi-arrow-down me-1"></i> Softening</span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">Balanced</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('predictionChart');
+    if (ctx) {
+        const histLabels = {{ forecast.historical_labels|tojson }};
+        const histPrices = {{ forecast.historical_prices|tojson }};
+        const foreLabels = {{ forecast.forecast_labels|tojson }};
+        const forePrices = {{ forecast.forecast_predicted|tojson }};
+        const foreUpper = {{ forecast.forecast_upper|tojson }};
+        const foreLower = {{ forecast.forecast_lower|tojson }};
+
+        // Combine labels
+        const allLabels = [...histLabels, ...foreLabels];
+
+        // Format historical dataset (null for forecast days)
+        const histData = [...histPrices];
+        for (let i = 0; i < foreLabels.length; i++) {
+            histData.push(null);
+        }
+
+        // Format forecast dataset (bridge seamlessly from last historical point)
+        const foreData = [];
+        const upperData = [];
+        const lowerData = [];
+
+        for (let i = 0; i < histLabels.length - 1; i++) {
+            foreData.push(null);
+            upperData.push(null);
+            lowerData.push(null);
+        }
+        // Bridge point
+        if (histPrices.length > 0) {
+            const bridgeVal = histPrices[histPrices.length - 1];
+            foreData.push(bridgeVal);
+            upperData.push(bridgeVal);
+            lowerData.push(bridgeVal);
+        }
+
+        forePrices.forEach(p => foreData.push(p));
+        foreUpper.forEach(p => upperData.push(p));
+        foreLower.forEach(p => lowerData.push(p));
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: allLabels,
+                datasets: [
+                    {
+                        label: 'Actual Recorded Rate (₹)',
+                        data: histData,
+                        borderColor: '#2e7d32',
+                        backgroundColor: 'rgba(46, 125, 50, 0.15)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#2e7d32',
+                        fill: false,
+                        tension: 0.2
+                    },
+                    {
+                        label: '7-Day AI Prediction (₹)',
+                        data: foreData,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderWidth: 3,
+                        borderDash: [6, 6],
+                        pointRadius: 5,
+                        pointBackgroundColor: '#f59e0b',
+                        fill: false,
+                        tension: 0.2
+                    },
+                    {
+                        label: 'Upper Confidence Limit (₹)',
+                        data: upperData,
+                        borderColor: 'rgba(156, 163, 175, 0.4)',
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        pointRadius: 0,
+                        fill: false
+                    },
+                    {
+                        label: 'Lower Confidence Limit (₹)',
+                        data: lowerData,
+                        borderColor: 'rgba(156, 163, 175, 0.4)',
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        pointRadius: 0,
+                        fill: '-1',
+                        backgroundColor: 'rgba(229, 231, 235, 0.4)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(value) { return '₹' + value; }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

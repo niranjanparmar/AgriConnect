@@ -14,9 +14,9 @@ In traditional Indian agricultural marketing, growers are separated from retail 
 
 **AgriConnect** is an integrated full-stack web application designed to solve these systemic inefficiencies through two interconnected modules:
 1. **Direct Farmer-to-Consumer E-Commerce Marketplace (Module A):** Enables registered farmers to catalog fresh harvests with direct mobile camera photo capture, manage active inventory, and fulfill direct customer orders without intermediary brokerage. Consumers browse verified produce listings, maintain persistent shopping carts, and place orders with server-side stock validation and cash-on-delivery tracking.
-2. **APMC Mandi Crop Price Intelligence System (Module B):** Ingests, normalizes, and idempotently stores daily wholesale arrival and price records conforming to the official Government of India Open Government Data (data.gov.in) and Agmarknet schemas. It provides inter-market price comparisons, 7-day historical price volatility charts using Chart.js, and an automated rate-alert trigger engine.
+2. **APMC Mandi Crop Price Intelligence System (Module B):** Ingests, normalizes, and idempotently stores daily wholesale arrival and price records conforming to the official Government of India Open Government Data (data.gov.in) and Agmarknet schemas. It provides inter-market price comparisons, 7-day historical price volatility charts, automated rate alerts, and a **Pan-India Time-Series Price Prediction Engine** with state-by-state market forecasts and arbitrage intelligence.
 
-The platform is engineered using Python 3.11, Flask 3.0, PostgreSQL/SQLAlchemy, and Bootstrap 5. It incorporates role-based access control (RBAC), CSRF protection, secure local file uploads, and atomic database transactions. The system is verified by a test suite of 49 automated unit, integration, and security test cases.
+The platform is engineered using Python 3.11, Flask 3.0, PostgreSQL/SQLAlchemy, and Bootstrap 5. It incorporates role-based access control (RBAC), CSRF protection, secure local file uploads, and atomic database transactions. The system is verified by a test suite of 53 automated unit, integration, and security test cases.
 
 ---
 
@@ -320,14 +320,14 @@ sequenceDiagram
 
 ## 7. Automated Testing & Verification Matrix
 
-The software was developed using **Test-Driven Verification**. The test suite comprises **49 test cases** executed via `pytest`, covering unit models, authentication, marketplace logic, external data sync, and security controls:
+The software was developed using **Test-Driven Verification**. The test suite comprises **53 test cases** executed via `pytest`, covering unit models, authentication, marketplace logic, external data sync, AI forecasting, and security controls:
 
 ```
 ============================= pytest summary =============================
 Directory: tests/
-Total Test Files: 7
-Collected Items: 49
-Result: 49 Passed, 0 Failed, 0 Warnings (100% Pass Rate in 14.98s)
+Total Test Files: 8
+Collected Items: 53
+Result: 53 Passed, 0 Failed, 0 Warnings (100% Pass Rate in 16.90s)
 ```
 
 ### Detailed Test Distribution:
@@ -341,9 +341,11 @@ Result: 49 Passed, 0 Failed, 0 Warnings (100% Pass Rate in 14.98s)
    - Add to cart within stock limits, add to cart exceeding stock rejection, transactional checkout with atomic stock decrement, insufficient stock rollback, horizontal order authorization denial, and farmer order status lifecycle update.
 5. **Database Models & Constraints (`tests/test_models.py` — 6 Tests):**
    - Password hash verification, farmer profile 1:1 relationship, produce listing decimal precision, cart item uniqueness, historical order snapshot immutability, and deterministic mandi hash uniqueness.
-6. **APMC Price Ingestion & Analytics (`tests/test_prices.py` — 9 Tests):**
+6. **Pan-India Price Prediction Engine (`tests/test_prediction.py` — 4 Tests):**
+   - Time-series regression trend math, volatility confidence intervals, pan-India state ranking, `/prices/predict` view rendering, and unrecorded crop fallback resilience.
+7. **APMC Price Ingestion & Analytics (`tests/test_prices.py` — 9 Tests):**
    - Standard benchmark ingestion, idempotent zero-duplicate import verification, validation of malformed/negative records, auto-fallback on unconfigured API key, price alert matching on sync, commodity search view, inter-mandi comparison view, Chart.js trends view, and price alert creation/deletion lifecycle.
-7. **Security & Vulnerability Hardening (`tests/test_security.py` — 9 Tests):**
+8. **Security & Vulnerability Hardening (`tests/test_security.py` — 9 Tests):**
    - HTTP security headers presence, consumer role boundary enforcement, cross-farmer listing tamper defense, executable upload rejection, path traversal sanitization, legitimate image upload verification, SQL injection search immunity, order viewing authorization check, and stack trace suppression.
 
 ---

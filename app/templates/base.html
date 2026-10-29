@@ -61,6 +61,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('prices.index') }}"><i class="bi bi-search me-2 text-success"></i> Price Tracker</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('prices.compare') }}"><i class="bi bi-arrow-left-right me-2 text-primary"></i> Market Comparison</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('prices.trends') }}"><i class="bi bi-bar-chart-line me-2 text-warning"></i> Historical Trends</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('prices.predict') }}"><i class="bi bi-magic me-2 text-info"></i> Pan-India Price Prediction</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('prices.alerts') }}"><i class="bi bi-bell me-2 text-danger"></i> Price Alerts</a></li>
                         </ul>
@@ -191,6 +192,7 @@
                         <li class="mb-2"><a href="{{ url_for('prices.index') }}" class="text-white-50 text-decoration-none hover-link">APMC Daily Rates</a></li>
                         <li class="mb-2"><a href="{{ url_for('prices.compare') }}" class="text-white-50 text-decoration-none hover-link">Inter-Market Comparison</a></li>
                         <li class="mb-2"><a href="{{ url_for('prices.trends') }}" class="text-white-50 text-decoration-none hover-link">Historical Price Trends</a></li>
+                        <li class="mb-2"><a href="{{ url_for('prices.predict') }}" class="text-white-50 text-decoration-none hover-link">AI Price Forecasting</a></li>
                         <li class="mb-2"><a href="{{ url_for('prices.alerts') }}" class="text-white-50 text-decoration-none hover-link">Price Alert Subscriptions</a></li>
                     </ul>
                 </div>
