@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Home - AgriConnect Marketplace & Crop Price Tracker{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center text-white py-5 mb-5" style="background: linear-gradient(135deg, #1b5e20, #2e7d32);">
+    <div class="container py-4">
+        <span class="badge bg-warning text-dark px-3 py-2 mb-3 rounded-pill fw-bold">Direct Farmer-to-Consumer Network</span>
+        <h1 class="display-4 fw-bold mb-3">Empowering Farmers, Delivering Freshness</h1>
+        <p class="lead mb-4 col-md-8 mx-auto text-light">
+            Eliminate middlemen markups, buy directly from local agricultural producers, and stay informed with real-time APMC mandi crop price tracking.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('marketplace.index') }}" class="btn btn-warning btn-lg fw-semibold px-4 shadow-sm">
+                <i class="bi bi-basket3 me-2"></i> Browse Marketplace
+            </a>
+            <a href="{{ url_for('prices.index') }}" class="btn btn-outline-light btn-lg fw-semibold px-4">
+                <i class="bi bi-graph-up me-2"></i> Track Mandi Prices
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-shadow">
+                <div class="display-5 text-success mb-3"><i class="bi bi-truck"></i></div>
+                <h5 class="fw-bold">Direct from Farmers</h5>
+                <p class="text-muted">Fresh harvest directly listed by certified regional farmers with complete transparent farm location tracking.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-shadow">
+                <div class="display-5 text-success mb-3"><i class="bi bi-shield-check"></i></div>
+                <h5 class="fw-bold">Fair & Transparent Pricing</h5>
+                <p class="text-muted">Direct transaction models ensuring fair value returns for producers and affordable rates for consumers.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4 rounded-4 hover-shadow">
+                <div class="display-5 text-success mb-3"><i class="bi bi-bar-chart-line"></i></div>
+                <h5 class="fw-bold">APMC Price Intelligence</h5>
+                <p class="text-muted">Comprehensive crop price charts, modal rate comparisons, and historical trends across key Indian agricultural markets.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

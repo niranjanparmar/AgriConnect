@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Shopping Cart - AgriConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h2 class="fw-bold text-success mb-3">Your Shopping Cart</h2>
+    <div class="card p-5 text-center border-0 shadow-sm rounded-4">
+        <i class="bi bi-cart-x display-4 text-muted mb-3"></i>
+        <h5>Your cart is currently empty</h5>
+        <p class="text-muted">Explore fresh farm produce directly from local growers.</p>
+        <div>
+            <a href="{{ url_for('marketplace.index') }}" class="btn btn-success px-4">Visit Marketplace</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Register - AgriConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4 border-0 shadow-sm rounded-4">
+                <h3 class="fw-bold text-center text-success mb-3">Create an Account</h3>
+                <p class="text-center text-muted small">Join as a local agricultural producer or consumer</p>
+                <div class="alert alert-info small">Registration system with role-selection will be activated in Phase 5.</div>
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary w-100">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
